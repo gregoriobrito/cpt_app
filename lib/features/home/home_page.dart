@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cpv_app/features/racha/racha_page.dart';
+import 'package:cpv_app/features/partida/partida_racha_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -35,19 +36,14 @@ class HomePage extends StatelessWidget {
                   label: "Rachas",
                   icon: Icons.groups,
                   onTap: () {
-                    Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const RachaPage(),
-                                    ),
-                                  );
+                    Navigator.push(context,MaterialPageRoute(builder: (_) => const RachaPage(),),);
                   },
                 ),
                 _HomeButton(
                   label: "Partidas",
                   icon: Icons.sports_soccer,
                   onTap: () {
-                    // Navigator.push(...);
+                    Navigator.push(context,MaterialPageRoute(builder: (_) => const PartidaRachaPage(),),);
                   },
                 ),
                 _HomeButton(

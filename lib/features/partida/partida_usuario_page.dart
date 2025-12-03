@@ -1,22 +1,23 @@
+import 'package:cpv_app/features/usuario/usuario_model.dart';
 import 'package:flutter/material.dart';
-import 'racha_model.dart';
-import 'racha_service.dart';
+import 'package:cpv_app/features/racha/racha_model.dart';
+import 'package:cpv_app/features/racha/racha_service.dart';
 
-class RachaPage extends StatefulWidget {
-  const RachaPage({super.key});
+class PartidaUsuarioPage extends StatefulWidget {
+  const PartidaUsuarioPage({super.key});
 
   @override
-  State<RachaPage> createState() => _RachaPageState();
+  State<PartidaUsuarioPage> createState() => _PartidaUsuarioPageState();
 }
 
-class _RachaPageState extends State<RachaPage> {
+class _PartidaUsuarioPageState extends State<PartidaUsuarioPage> {
   final _service = RachaService();
-  late Future<List<Racha>> _future;
+  late Future<List<Usuario>> _future;
 
   @override
   void initState() {
     super.initState();
-    _future = _service.listarRacha();
+    _future = _service.listarUsuario(1);
   }
 
   @override
@@ -25,10 +26,10 @@ class _RachaPageState extends State<RachaPage> {
       backgroundColor: Colors.grey[200], // fundo cinza
 
       appBar: AppBar(
-        title: const Text('Rachas'),
+        title: const Text('Jogadores - Cadastrar Partida'),
       ),
 
-      body: FutureBuilder<List<Racha>>(
+      body: FutureBuilder<List<Usuario>>(
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -41,18 +42,18 @@ class _RachaPageState extends State<RachaPage> {
             );
           }
 
-          final rachas = snapshot.data ?? [];
+          final jogadores = snapshot.data ?? [];
 
-          if (rachas.isEmpty) {
+          if (jogadores.isEmpty) {
             return const Center(
-              child: Text('Nenhum racha encontrado'),
+              child: Text('Nenhum jogador encontrado'),
             );
           }
 
           return ListView.builder(
-            itemCount: rachas.length,
+            itemCount: jogadores.length,
             itemBuilder: (context, index) {
-              final r = rachas[index];
+              final r = jogadores[index];
 
               return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -77,10 +78,9 @@ class _RachaPageState extends State<RachaPage> {
                     // Botão (direita)
                     ElevatedButton(
                       onPressed: () {
-                        // Navegar para outra página se quiser
-                        // Navigator.push(...)
+                        Navigator.push(context,MaterialPageRoute(builder: (_) => const PartidaUsuarioPage(),),);
                       },
-                      child: const Text("Partidas"),
+                      child: const Text("Seleecionar"),
                     ),
                   ],
                 ),

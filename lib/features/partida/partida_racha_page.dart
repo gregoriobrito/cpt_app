@@ -1,15 +1,16 @@
+import 'package:cpv_app/features/partida/partida_usuario_page.dart';
 import 'package:flutter/material.dart';
-import 'racha_model.dart';
-import 'racha_service.dart';
+import 'package:cpv_app/features/racha/racha_model.dart';
+import 'package:cpv_app/features/racha/racha_service.dart';
 
-class RachaPage extends StatefulWidget {
-  const RachaPage({super.key});
+class PartidaRachaPage extends StatefulWidget {
+  const PartidaRachaPage({super.key});
 
   @override
-  State<RachaPage> createState() => _RachaPageState();
+  State<PartidaRachaPage> createState() => _PartidaRachaPageState();
 }
 
-class _RachaPageState extends State<RachaPage> {
+class _PartidaRachaPageState extends State<PartidaRachaPage> {
   final _service = RachaService();
   late Future<List<Racha>> _future;
 
@@ -25,7 +26,7 @@ class _RachaPageState extends State<RachaPage> {
       backgroundColor: Colors.grey[200], // fundo cinza
 
       appBar: AppBar(
-        title: const Text('Rachas'),
+        title: const Text('Rachas - Cadastrar Partida'),
       ),
 
       body: FutureBuilder<List<Racha>>(
@@ -77,10 +78,9 @@ class _RachaPageState extends State<RachaPage> {
                     // Botão (direita)
                     ElevatedButton(
                       onPressed: () {
-                        // Navegar para outra página se quiser
-                        // Navigator.push(...)
+                        Navigator.push(context,MaterialPageRoute(builder: (_) => const PartidaUsuarioPage(),),);
                       },
-                      child: const Text("Partidas"),
+                      child: const Text("Cadastrar"),
                     ),
                   ],
                 ),
