@@ -107,14 +107,14 @@ class _LoginPageState extends State<LoginPage> {
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(
-                    labelText: 'E-mail',
+                    labelText: 'Usuário',
                     prefixIcon: Icon(Icons.email_outlined),
                     border: OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Informe seu e-mail';
+                      return 'Informe seu usuario';
                     }
                     /*
                     if (!value.contains('@')) {

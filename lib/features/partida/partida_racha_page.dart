@@ -78,7 +78,14 @@ class _PartidaRachaPageState extends State<PartidaRachaPage> {
                     // Botão (direita)
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.push(context,MaterialPageRoute(builder: (_) => const PartidaUsuarioPage(),),);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PartidaUsuarioPage(
+                              codigoRacha: r.codigo, // ou r.id, conforme seu model
+                            ),
+                          ),
+                        );
                       },
                       child: const Text("Cadastrar"),
                     ),
