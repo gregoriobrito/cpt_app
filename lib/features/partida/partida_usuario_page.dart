@@ -1,4 +1,5 @@
 import 'package:cpv_app/features/partida/partida_cadastrar_model.dart';
+import 'package:cpv_app/features/partida/partida_placar_page.dart';
 import 'package:cpv_app/features/partida/partida_service.dart';
 import 'package:cpv_app/features/partida/partida_time_model.dart';
 import 'package:cpv_app/features/partida/partida_usuario_time_model.dart';
@@ -71,7 +72,6 @@ class _PartidaUsuarioPageState extends State<PartidaUsuarioPage> {
       return;
     }
 
-    // -------- MONTA O PartidaRequest --------
     final request = PartidaCadastrar(
       codigoRacha: widget.codigoRacha, // você passou esse valor na navegação
       listaTime: [
@@ -88,14 +88,20 @@ class _PartidaUsuarioPageState extends State<PartidaUsuarioPage> {
       ],
     );
 
-    // -------- CHAMA O SERVICE --------
     try {
       final service = PartidaService();
       final partida = await service.cadastrar(request);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Partida cadastrada! Código: ${partida.codigo}"),
+          content: Text("Partida cadastrada!"),
+        ),
+      );
+
+     Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PartidaPlacaPage(idPartida: partida.codigo),
         ),
       );
     } catch (e) {

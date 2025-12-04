@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'App com Login',
+      title: 'Controlar Pontos',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
@@ -49,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _isLoading = true);
 
-    final email = _emailController.text.trim();
+    final email = _emailController.text.trim().toUpperCase();
     final senha = _senhaController.text.trim();
 
     try {
@@ -150,8 +150,8 @@ class _LoginPageState extends State<LoginPage> {
                     if (value == null || value.trim().isEmpty) {
                       return 'Informe sua senha';
                     }
-                    if (value.length < 6) {
-                      return 'A senha deve ter pelo menos 6 caracteres';
+                    if (value.length < 3) {
+                      return 'A senha deve ter pelo menos 3 caracteres';
                     }
                     return null;
                   },
@@ -169,6 +169,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
 
+                /*
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: () {
@@ -176,6 +177,7 @@ class _LoginPageState extends State<LoginPage> {
                   },
                   child: const Text('Criar conta'),
                 ),
+                */
               ],
             ),
           ),

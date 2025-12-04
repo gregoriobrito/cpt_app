@@ -1,3 +1,7 @@
+import 'package:cpv_app/core/api_client.dart';
+import 'package:cpv_app/features/relatorio/relatorio_racha_page.dart';
+import 'package:cpv_app/features/usuario/usuario_service.dart';
+import 'package:cpv_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:cpv_app/features/racha/racha_page.dart';
 import 'package:cpv_app/features/partida/partida_racha_page.dart';
@@ -5,62 +9,133 @@ import 'package:cpv_app/features/partida/partida_racha_page.dart';
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
+  Future<String> _carregarUsuario() async {
+    final usuarioService = UsuarioService();
+    final usuario = await usuarioService.buscar();
+    return usuario.apelido;
+  }
+
+  void _confirmarLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: const Text("Sair"),
+          content: const Text("Deseja realmente sair do aplicativo?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context); // fecha dialog
+                await ApiClient().logout();
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                  (route) => false,
+                );
+              },
+              child: const Text("Sair"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    const nomeUsuario = "Gregório"; // fixo por enquanto
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Início"),
+        title: const Text("Controlador de Pontos"),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => _confirmarLogout(context),
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Olá, $nomeUsuario!",
-              style: const TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 24),
 
-            // ---------- Botões ----------
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: FutureBuilder<String>(
+        future: _carregarUsuario(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text("Erro ao carregar usuário: ${snapshot.error}"));
+          }
+
+          final nomeUsuario = snapshot.data ?? "Capivara";
+
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _HomeButton(
-                  label: "Rachas",
-                  icon: Icons.groups,
-                  onTap: () {
-                    Navigator.push(context,MaterialPageRoute(builder: (_) => const RachaPage(),),);
-                  },
+                Text(
+                  "Olá, $nomeUsuario!",
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                _HomeButton(
-                  label: "Partidas",
-                  icon: Icons.sports_soccer,
-                  onTap: () {
-                    Navigator.push(context,MaterialPageRoute(builder: (_) => const PartidaRachaPage(),),);
-                  },
-                ),
-                _HomeButton(
-                  label: "Estatísticas",
-                  icon: Icons.bar_chart,
-                  onTap: () {
-                    // Navigator.push(...);
-                  },
+
+                const SizedBox(height: 24),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _HomeButton(
+                      label: "Rachas",
+                      icon: Icons.groups,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const RachaPage(),
+                          ),
+                        );
+                      },
+                    ),
+                    _HomeButton(
+                      label: "Partidas",
+                      icon: Icons.sports_soccer,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const PartidaRachaPage(),
+                          ),
+                        );
+                      },
+                    ),
+                    _HomeButton(
+                      label: "Estatísticas",
+                      icon: Icons.bar_chart,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const RelatorioRachaPage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 }
+
 
 // --------------------- WIDGET DO BOTÃO ---------------------
 class _HomeButton extends StatelessWidget {
