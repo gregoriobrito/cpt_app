@@ -22,4 +22,31 @@ class PartidaService {
       );
     }
   }
+
+  Future<Partida> burcar(int codigo) async {
+    final response = await _client.get('/partida/$codigo');
+
+    if (response.statusCode == 200) {
+      final jsonBody = jsonDecode(response.body);
+      return Partida.fromJson(jsonBody);
+    } else {
+      throw Exception(
+        "Erro ao buscar partida: ${response.statusCode} | ${response.body}",
+      );
+    }
+  }
+
+  Future<List<Partida>> listarPartidas(int idRacha) async {
+    final response = await _client.get('/partida/racha/$idRacha');
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = jsonDecode(response.body);
+
+      return jsonList
+          .map((e) => Partida.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+
+    throw Exception('Erro ao listar rachas: ${response.statusCode}');
+  }
 }

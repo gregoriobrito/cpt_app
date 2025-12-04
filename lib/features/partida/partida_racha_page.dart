@@ -75,7 +75,6 @@ class _PartidaRachaPageState extends State<PartidaRachaPage> {
                       ),
                     ),
 
-                    // Botão (direita)
                     ElevatedButton(
                       onPressed: () {
                         Navigator.push(

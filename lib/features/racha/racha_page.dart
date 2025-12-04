@@ -1,3 +1,4 @@
+import 'package:cpv_app/features/partida/partidas_page.dart';
 import 'package:flutter/material.dart';
 import 'racha_model.dart';
 import 'racha_service.dart';
@@ -74,11 +75,16 @@ class _RachaPageState extends State<RachaPage> {
                       ),
                     ),
 
-                    // Botão (direita)
                     ElevatedButton(
                       onPressed: () {
-                        // Navegar para outra página se quiser
-                        // Navigator.push(...)
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PartidasPage(
+                              codigoRacha: r.codigo,
+                            ),
+                          ),
+                        );
                       },
                       child: const Text("Partidas"),
                     ),
