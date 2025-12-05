@@ -9,10 +9,7 @@ import 'partida_service.dart';
 class PartidaPlacaPage extends StatefulWidget {
   final int idPartida;
 
-  const PartidaPlacaPage({
-    super.key,
-    required this.idPartida,
-  });
+  const PartidaPlacaPage({super.key, required this.idPartida});
 
   @override
   State<PartidaPlacaPage> createState() => _PartidaPlacaPageState();
@@ -54,20 +51,14 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
     }
 
     _controllers = times
-        .map(
-          (t) => TextEditingController(
-            text: (t.pontuacao ?? 0).toString(),
-          ),
-        )
+        .map((t) => TextEditingController(text: (t.pontuacao ?? 0).toString()))
         .toList();
   }
 
   Future<void> _atualizarPlaca() async {
     if (_partida == null || _partida!.listaTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Partida ou times não carregados.'),
-        ),
+        const SnackBar(content: Text('Partida ou times não carregados.')),
       );
       return;
     }
@@ -86,15 +77,11 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
       await _service.atualizarPontos(PartidaPontoTime(lista: lista));
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('A pontuação foi atualizada.'),
-        ),
+        const SnackBar(content: Text('A pontuação foi atualizada.')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao atualizar pontuação: $e'),
-        ),
+        SnackBar(content: Text('Erro ao atualizar pontuação: $e')),
       );
     }
   }
@@ -105,161 +92,155 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Detalhes da Partida'),
-      ),
-      body: FutureBuilder<Partida>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(), // <--- fecha o teclado
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Detalhes da Partida')),
+        body: FutureBuilder<Partida>(
+          future: _future,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Erro ao carregar partida:\n${snapshot.error}',
-                textAlign: TextAlign.center,
-              ),
-            );
-          }
+            if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  'Erro ao carregar partida:\n${snapshot.error}',
+                  textAlign: TextAlign.center,
+                ),
+              );
+            }
 
-          final partida = snapshot.data;
-          if (partida == null) {
-            return const Center(child: Text('Partida não encontrada.'));
-          }
+            final partida = snapshot.data;
+            if (partida == null) {
+              return const Center(child: Text('Partida não encontrada.'));
+            }
 
-          // Guarda a partida carregada no state
-          _partida = partida;
+            // Guarda a partida carregada no state
+            _partida = partida;
 
-          // Inicializa controllers de pontuação (se ainda não foram criados)
-          _initControllersIfNeeded(partida);
+            // Inicializa controllers de pontuação (se ainda não foram criados)
+            _initControllersIfNeeded(partida);
 
-          final listaTimes = partida.listaTime ?? [];
+            final listaTimes = partida.listaTime ?? [];
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ---------- Card com dados principais ----------
-                Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          partida.racha?.nome ?? 'Racha',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(Icons.calendar_today, size: 18),
-                            const SizedBox(width: 8),
-                            Text(
-                              _formatarData(partida.data),
-                              style: const TextStyle(fontSize: 16),
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ---------- Card com dados principais ----------
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            partida.racha?.nome ?? 'Racha',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
                             ),
-                          ],
-                        ),
-                      ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Icon(Icons.calendar_today, size: 18),
+                              const SizedBox(width: 8),
+                              Text(
+                                _formatarData(partida.data),
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                const Text(
-                  'Times',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                  const Text(
+                    'Times',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                ),
-                const SizedBox(height: 8),
+                  const SizedBox(height: 8),
 
-                // ---------- Lista de times ----------
-                ListView.builder(
-                  itemCount: listaTimes.length,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    final time = listaTimes[index];
-                    final controller = _controllers[index];
+                  // ---------- Lista de times ----------
+                  ListView.builder(
+                    itemCount: listaTimes.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final time = listaTimes[index];
+                      final controller = _controllers[index];
 
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          child: Text('${index + 1}'),
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        title: Text(
-                          time.identificador,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
+                        child: ListTile(
+                          leading: CircleAvatar(child: Text('${index + 1}')),
+                          title: Text(
+                            time.identificador,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
-                        ),
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: SizedBox(
-                            width: 40,
-                            child: TextFormField(
-                              controller: controller,
-                              textAlign: TextAlign.center,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                isDense: true,
-                                contentPadding: EdgeInsets.zero,
-                              ),
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue.shade800,
+                          trailing: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: SizedBox(
+                              width: 40,
+                              child: TextFormField(
+                                controller: controller,
+                                textAlign: TextAlign.center,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue.shade800,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
 
-      // ---------- BOTÃO INFERIOR ----------
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: SizedBox(
-            height: 48,
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _atualizarPlaca,
-              child: const Text('Atualizar Pontuação'),
+        // ---------- BOTÃO INFERIOR ----------
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: SizedBox(
+              height: 48,
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _atualizarPlaca,
+                child: const Text('Atualizar Pontuação'),
+              ),
             ),
           ),
         ),
