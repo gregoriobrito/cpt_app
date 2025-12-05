@@ -1,3 +1,5 @@
+import 'package:cpv_app/features/partida/partida_ponto_time_detalhe_model.dart';
+import 'package:cpv_app/features/partida/partida_ponto_time_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -20,10 +22,81 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
   final _service = PartidaService();
   late Future<Partida> _future;
 
+  // Vamos guardar a partida carregada para usar no _atualizarPlaca
+  Partida? _partida;
+
+  // Um controller para cada campo de pontuação
+  List<TextEditingController> _controllers = [];
+
   @override
   void initState() {
     super.initState();
-    _future = _service.burcar(widget.idPartida);
+    _future = _service.burcar(widget.idPartida); // seu método existente
+  }
+
+  @override
+  void dispose() {
+    for (final c in _controllers) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  void _initControllersIfNeeded(Partida partida) {
+    final times = partida.listaTime ?? [];
+
+    // Se já tiver controllers com o mesmo tamanho, não recria
+    if (_controllers.length == times.length) return;
+
+    // Descarta controllers antigos (se tiver)
+    for (final c in _controllers) {
+      c.dispose();
+    }
+
+    _controllers = times
+        .map(
+          (t) => TextEditingController(
+            text: (t.pontuacao ?? 0).toString(),
+          ),
+        )
+        .toList();
+  }
+
+  Future<void> _atualizarPlaca() async {
+    if (_partida == null || _partida!.listaTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Partida ou times não carregados.'),
+        ),
+      );
+      return;
+    }
+
+    final times = _partida!.listaTime!;
+    List<PartidaPontoTimeDetalhe> lista = [];
+
+    for (int i = 0; i < times.length; i++) {
+      final time = times[i];
+      final pontosText = _controllers[i].text.trim();
+      final pontos = int.tryParse(pontosText) ?? 0;
+      lista.add(PartidaPontoTimeDetalhe(idTime: time.codigo, pontos: pontos));
+    }
+
+    try {
+      await _service.atualizarPontos(PartidaPontoTime(lista: lista));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('A pontuação foi atualizada.'),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao atualizar pontuação: $e'),
+        ),
+      );
+    }
   }
 
   String _formatarData(DateTime data) {
@@ -57,6 +130,14 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
             return const Center(child: Text('Partida não encontrada.'));
           }
 
+          // Guarda a partida carregada no state
+          _partida = partida;
+
+          // Inicializa controllers de pontuação (se ainda não foram criados)
+          _initControllersIfNeeded(partida);
+
+          final listaTimes = partida.listaTime ?? [];
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -74,7 +155,7 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          partida.racha!.nome, //partida.racha.nome,
+                          partida.racha?.nome ?? 'Racha',
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -109,11 +190,12 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
 
                 // ---------- Lista de times ----------
                 ListView.builder(
-                  itemCount: partida.listaTime?.length,
+                  itemCount: listaTimes.length,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
-                    final time = partida.listaTime?[index];
+                    final time = listaTimes[index];
+                    final controller = _controllers[index];
 
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -125,7 +207,7 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
                           child: Text('${index + 1}'),
                         ),
                         title: Text(
-                          time!.identificador,
+                          time.identificador,
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
                           ),
@@ -139,12 +221,22 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
                             color: Colors.blue.shade50,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(
-                            '${time.pontuacao}',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue.shade800,
+                          child: SizedBox(
+                            width: 40,
+                            child: TextFormField(
+                              controller: controller,
+                              textAlign: TextAlign.center,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue.shade800,
+                              ),
                             ),
                           ),
                         ),
@@ -156,6 +248,21 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
             ),
           );
         },
+      ),
+
+      // ---------- BOTÃO INFERIOR ----------
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: SizedBox(
+            height: 48,
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _atualizarPlaca,
+              child: const Text('Atualizar Pontuação'),
+            ),
+          ),
+        ),
       ),
     );
   }
