@@ -5,6 +5,7 @@ class Partida {
   final int codigo;
   final String identificador;
   final DateTime data;
+  final int? codigoRacha;
   final Racha? racha;
   final List<Time>? listaTime;
 
@@ -12,6 +13,7 @@ class Partida {
     required this.codigo,
     required this.identificador,
     required this.data,
+    this.codigoRacha,
     this.racha,
     this.listaTime,
   });
@@ -21,6 +23,7 @@ class Partida {
       codigo: json['codigo'] as int,
       identificador: json['identificador'] as String,
       data: DateTime.parse(json['data']),
+      codigoRacha: json['codigoRacha'] as int,
       racha: json['racha'] != null ? Racha.fromJson(json['racha']) : null,
       listaTime: json['listaTime'] != null ? (json['listaTime'] as List).map((e) => Time.fromJson(e)).toList(): null,
     );

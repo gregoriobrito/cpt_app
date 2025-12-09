@@ -90,7 +90,7 @@ class _PartidasPageState extends State<PartidasPage> {
                           context,
                           MaterialPageRoute(
                             builder: (_) => PartidaPlacaPage(
-                              idPartida: partida.codigo,
+                              idPartida: partida.codigo, pageBack: 3,
                             ),
                           ),
                         );

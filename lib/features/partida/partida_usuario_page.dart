@@ -101,7 +101,7 @@ class _PartidaUsuarioPageState extends State<PartidaUsuarioPage> {
      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => PartidaPlacaPage(idPartida: partida.codigo),
+          builder: (_) => PartidaPlacaPage(idPartida: partida.codigo, pageBack: 2,),
         ),
       );
     } catch (e) {

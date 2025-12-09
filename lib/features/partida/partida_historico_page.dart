@@ -57,11 +57,11 @@ class _PartidaHistoricoPageState extends State<PartidaHistoricoPage> {
                 title: const Text('Alterar'),
                 onTap: () {
                   Navigator.pop(context); // fecha o bottom sheet
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                       builder: (_) =>
-                          PartidaPlacaPage(idPartida: partida.codigo),
+                          PartidaPlacaPage(idPartida: partida.codigo, pageBack: 1,),
                     ),
                   );
                 },
