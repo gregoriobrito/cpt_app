@@ -1,3 +1,4 @@
+import 'package:cpv_app/features/partida/partida_historico_page.dart';
 import 'package:cpv_app/features/partida/partidas_page.dart';
 import 'package:flutter/material.dart';
 import 'racha_model.dart';
@@ -80,7 +81,7 @@ class _RachaPageState extends State<RachaPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => PartidasPage(
+                            builder: (_) => PartidaHistoricoPage(
                               codigoRacha: r.codigo,
                             ),
                           ),
