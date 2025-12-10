@@ -85,6 +85,7 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
     try {
       await _service.atualizarPontos(PartidaPontoTime(lista: lista));
 
+      _voltarTela(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('A pontuação foi atualizada.')),
       );
@@ -95,7 +96,7 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
     }
   }
 
-  void _showExitConfirmationDialog(BuildContext context) {
+  void _voltarTela(BuildContext context) {
     if (widget.pageBack == 1) {
       Navigator.pushReplacement(
         context,
@@ -124,12 +125,7 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
     return PopScope(
       canPop: false,
       onPopInvoked: (bool didPop) {
-        if (didPop) {
-          return; // Se o pop já ocorreu por outro motivo, saia.
-        }
-        // Adicione sua lógica personalizada aqui, por exemplo:
-        print("Botão de voltar pressionado! Exibindo diálogo de confirmação.");
-        _showExitConfirmationDialog(context);
+        _voltarTela(context);
       },
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(), // <--- fecha o teclado
