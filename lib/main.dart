@@ -1,3 +1,4 @@
+import 'package:cpv_app/features/usuario/usuario_cadastro_page.dart';
 import 'package:flutter/material.dart';
 import 'core/api_client.dart';
 import 'features/home/home_page.dart';
@@ -57,18 +58,14 @@ class _LoginPageState extends State<LoginPage> {
       await ApiClient().login(username: email, password: senha);
 
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const HomePage(),
-        ),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -88,18 +85,12 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(
-                  Icons.lock_outline,
-                  size: 72,
-                ),
+                const Icon(Icons.lock_outline, size: 72),
                 const SizedBox(height: 16),
                 const Text(
                   'Bem-vindo',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 32),
 
@@ -169,15 +160,18 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
 
-                /*
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: () {
-                    // Aqui você poderia ir para uma tela de cadastro
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const UsuarioCadastroPage(),
+                      ),
+                    );
                   },
                   child: const Text('Criar conta'),
                 ),
-                */
               ],
             ),
           ),

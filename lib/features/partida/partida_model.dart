@@ -3,16 +3,16 @@ import 'package:cpv_app/features/time/time_model.dart';
 
 class Partida {
   final int codigo;
-  final String identificador;
-  final DateTime data;
+  final String? identificador;
+  final DateTime? data;
   final int? codigoRacha;
   final Racha? racha;
   final List<Time>? listaTime;
 
   Partida({
     required this.codigo,
-    required this.identificador,
-    required this.data,
+    this.identificador,
+    this.data,
     this.codigoRacha,
     this.racha,
     this.listaTime,

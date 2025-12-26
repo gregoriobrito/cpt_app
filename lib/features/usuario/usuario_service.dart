@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cpv_app/core/api_client.dart';
+import 'package:cpv_app/features/usuario/usuario_cadastro_model.dart';
 import 'package:cpv_app/features/usuario/usuario_model.dart';
 
 class UsuarioService {
@@ -15,6 +16,22 @@ class UsuarioService {
     } else {
       throw Exception(
         'Erro ao buscar relatório: ${response.statusCode} | ${response.body}',
+      );
+    }
+  }
+
+  Future<UsuarioCadastro> cadastrar(UsuarioCadastro request) async {
+    final response = await _client.post(
+      "/usuario/cadastro",
+      body: request.toJson(),
+    );
+
+    if (response.statusCode == 200) {
+      final jsonBody = jsonDecode(response.body);
+      return UsuarioCadastro.fromJson(jsonBody);
+    } else {
+      throw Exception(
+        "Erro ao atualizar pontos da partida: ${response.statusCode} | ${response.body}",
       );
     }
   }

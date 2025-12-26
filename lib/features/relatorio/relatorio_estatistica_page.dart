@@ -31,6 +31,12 @@ class _RelatorioEstatisticaPageState extends State<RelatorioEstatisticaPage> {
     else if (widget.tipoRacha == 2) {
       _future = _service.buscarRelatorioData(widget.idRacha);
     }
+    else if (widget.tipoRacha == 3) {
+      _future = _service.buscarRelatorioMes(widget.idRacha);
+    }
+    else if (widget.tipoRacha == 4) {
+      _future = _service.buscarRelatorioAno(widget.idRacha);
+    }
   }
 
   @override

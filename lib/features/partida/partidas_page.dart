@@ -68,14 +68,14 @@ class _PartidasPageState extends State<PartidasPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            partida.identificador,
+                            partida.identificador!,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           Text(
-                            DateFormat('dd/MM/yyyy').format(partida.data),
+                            DateFormat('dd/MM/yyyy').format(partida.data!),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[700],

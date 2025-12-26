@@ -1,3 +1,4 @@
+import 'package:cpv_app/features/partida/partida_model.dart';
 import 'package:cpv_app/features/partida/partida_placar_page.dart';
 import 'package:cpv_app/features/partida/partida_service.dart';
 import 'package:cpv_app/features/partida/vw_partida_model.dart';
@@ -73,14 +74,8 @@ class _PartidaHistoricoPageState extends State<PartidaHistoricoPage> {
                   style: TextStyle(color: Colors.red),
                 ),
                 onTap: () {
-                  Navigator.pop(context); // fecha o bottom sheet
-
-                  // TODO: chamar service de exclusão
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Excluir partida ${partida.codigo}'),
-                    ),
-                  );
+                  Navigator.pop(context);
+                  _confirmarExclusao(partida.codigo);
                 },
               ),
               const SizedBox(height: 8),
@@ -90,6 +85,62 @@ class _PartidaHistoricoPageState extends State<PartidaHistoricoPage> {
       },
     );
   }
+
+  void _recarregar() {
+  setState(() {
+    _future = _service.listarPartidasV2(widget.codigoRacha);
+  });
+}
+
+  void _confirmarExclusao(int codigoPartida) {
+  showDialog(
+    context: context,
+    builder: (_) {
+      return AlertDialog(
+        title: const Text('Excluir partida'),
+        content: const Text(
+          'Tem certeza que deseja excluir esta partida?\n'
+          'Essa ação não poderá ser desfeita.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // fecha o dialog
+            },
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            onPressed: () async {
+              Navigator.pop(context); // fecha o dialog
+
+              try {
+                await _service.excluirPartida(codigoPartida);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Partida excluída com sucesso'),
+                  ),
+                );
+
+                _recarregar();
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Erro ao excluir partida: $e'),
+                  ),
+                );
+              }
+            },
+            child: const Text('Excluir'),
+          ),
+        ],
+      );
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {

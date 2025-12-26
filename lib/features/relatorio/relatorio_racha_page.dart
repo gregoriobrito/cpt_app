@@ -115,7 +115,6 @@ class _RelatorioRachaPageState extends State<RelatorioRachaPage> {
 
             const SizedBox(height: 20),
 
-            // Botão Geral
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -136,7 +135,6 @@ class _RelatorioRachaPageState extends State<RelatorioRachaPage> {
 
             const SizedBox(height: 12),
 
-            // Botão Data
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -152,6 +150,46 @@ class _RelatorioRachaPageState extends State<RelatorioRachaPage> {
                   );
                 },
                 child: const Text("Data"),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // fecha o bottom sheet
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => RelatorioEstatisticaPage(
+                        idRacha: codigoRacha, tipoRacha: 3,
+                      ),
+                    ),
+                  );
+                },
+                child: const Text("Mes"),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // fecha o bottom sheet
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => RelatorioEstatisticaPage(
+                        idRacha: codigoRacha, tipoRacha: 4,
+                      ),
+                    ),
+                  );
+                },
+                child: const Text("Ano"),
               ),
             ),
           ],

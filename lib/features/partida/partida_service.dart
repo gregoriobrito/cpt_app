@@ -11,10 +11,7 @@ class PartidaService {
   final ApiClient _client = ApiClient();
 
   Future<Partida> cadastrar(PartidaCadastrar request) async {
-    final response = await _client.post(
-      "/partida",
-      body: request.toJson(),
-    );
+    final response = await _client.post("/partida", body: request.toJson());
 
     if (response.statusCode == 200) {
       final jsonBody = jsonDecode(response.body);
@@ -81,5 +78,19 @@ class PartidaService {
     }
 
     throw Exception('Erro ao listar rachas: ${response.statusCode}');
+  }
+
+  Future<void> excluirPartida(int idPartida) async {
+    Partida request = Partida(codigo: idPartida);
+    final response = await _client.post(
+      "/partida/excluir",
+      body: request.toJson(),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        "Erro ao atualizar pontos da partida: ${response.statusCode} | ${response.body}",
+      );
+    }
   }
 }

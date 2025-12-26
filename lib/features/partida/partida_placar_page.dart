@@ -189,7 +189,7 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
                                 const Icon(Icons.calendar_today, size: 18),
                                 const SizedBox(width: 8),
                                 Text(
-                                  _formatarData(partida.data),
+                                  _formatarData(partida.data!),
                                   style: const TextStyle(fontSize: 16),
                                 ),
                               ],
