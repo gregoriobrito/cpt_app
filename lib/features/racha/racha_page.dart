@@ -21,6 +21,58 @@ class _RachaPageState extends State<RachaPage> {
     _future = _service.listarRacha();
   }
 
+  void _mostrarOpcoesRacha(Racha r) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ListTile(
+                leading: const Icon(Icons.view_list),
+                title: const Text('Partidas'),
+                onTap: () {
+                  Navigator.pop(context); // fecha o bottom sheet
+                  Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PartidaHistoricoPage(
+                              codigoRacha: r.codigo,
+                            ),
+                          ),
+                        );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.join_full),
+                title: const Text('Vincular Usuário',),
+                onTap: () {
+                  Navigator.pop(context);
+                  //_confirmarExclusao(partida.codigo);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,18 +128,11 @@ class _RachaPageState extends State<RachaPage> {
                       ),
                     ),
 
-                    ElevatedButton(
+                    IconButton(
+                      icon: const Icon(Icons.more_vert),
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PartidaHistoricoPage(
-                              codigoRacha: r.codigo,
-                            ),
-                          ),
-                        );
+                        _mostrarOpcoesRacha(r);
                       },
-                      child: const Text("Partidas"),
                     ),
                   ],
                 ),

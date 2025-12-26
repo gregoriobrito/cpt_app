@@ -20,15 +20,15 @@ class UsuarioService {
     }
   }
 
-  Future<UsuarioCadastro> cadastrar(UsuarioCadastro request) async {
+  Future<Usuario> cadastrar(UsuarioCadastro request) async {
     final response = await _client.post(
-      "/usuario/cadastro",
+      "/usuario/cadastrar",
       body: request.toJson(),
     );
 
     if (response.statusCode == 200) {
       final jsonBody = jsonDecode(response.body);
-      return UsuarioCadastro.fromJson(jsonBody);
+      return Usuario.fromJson(jsonBody);
     } else {
       throw Exception(
         "Erro ao atualizar pontos da partida: ${response.statusCode} | ${response.body}",
