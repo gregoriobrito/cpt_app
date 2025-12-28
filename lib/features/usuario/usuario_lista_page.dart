@@ -1,28 +1,27 @@
 import 'package:cpv_app/features/partida/partida_historico_page.dart';
-import 'package:cpv_app/features/partida/partidas_page.dart';
-import 'package:cpv_app/features/usuario/usuario_lista_page.dart';
+import 'package:cpv_app/features/racha/racha_service.dart';
+import 'package:cpv_app/features/usuario/usuario_model.dart';
 import 'package:flutter/material.dart';
-import 'racha_model.dart';
-import 'racha_service.dart';
 
-class RachaPage extends StatefulWidget {
-  const RachaPage({super.key});
+class UsuarioListaPage extends StatefulWidget {
+  final int codigoRacha;
+  const UsuarioListaPage({super.key, required this.codigoRacha});
 
   @override
-  State<RachaPage> createState() => _RachaPageState();
+  State<UsuarioListaPage> createState() => _UsuarioListaPageState();
 }
 
-class _RachaPageState extends State<RachaPage> {
+class _UsuarioListaPageState extends State<UsuarioListaPage> {
   final _service = RachaService();
-  late Future<List<Racha>> _future;
+  late Future<List<Usuario>> _future;
 
   @override
   void initState() {
     super.initState();
-    _future = _service.listarRacha();
+    _future = _service.listarUsuario(widget.codigoRacha); // ID do racha
   }
 
-  void _mostrarOpcoesRacha(Racha r) {
+  void _mostrarOpcoesRacha(Usuario r) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -44,33 +43,28 @@ class _RachaPageState extends State<RachaPage> {
               ),
               const SizedBox(height: 8),
               ListTile(
-                leading: const Icon(Icons.view_list),
-                title: const Text('Partidas'),
+                leading: const Icon(Icons.admin_panel_settings),
+                title: const Text('Administrador'),
                 onTap: () {
                   Navigator.pop(context); // fecha o bottom sheet
                   Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PartidaHistoricoPage(
-                              codigoRacha: r.codigo,
-                            ),
-                          ),
-                        );
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          PartidaHistoricoPage(codigoRacha: r.codigo),
+                    ),
+                  );
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.join_full),
-                title: const Text('Vincular Usuário',),
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text(
+                  'Excluir',
+                  style: TextStyle(color: Colors.red),
+                ),
                 onTap: () {
-                  Navigator.pop(context); // fecha o bottom sheet
-                  Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => UsuarioListaPage(
-                              codigoRacha: r.codigo,
-                            ),
-                          ),
-                        );
+                  Navigator.pop(context);
+                  //_confirmarExclusao(partida.codigo);
                 },
               ),
               const SizedBox(height: 8),
@@ -87,10 +81,27 @@ class _RachaPageState extends State<RachaPage> {
       backgroundColor: Colors.grey[200], // fundo cinza
 
       appBar: AppBar(
-        title: const Text('Rachas'),
+        title: const Text('Usuários'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: 'Encontrar jogador',
+            onPressed: () {
+              /*
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      UsuarioBuscarPage(codigoRacha: widget.codigoRacha),
+                ),
+              );
+              */
+            },
+          ),
+        ],
       ),
 
-      body: FutureBuilder<List<Racha>>(
+      body: FutureBuilder<List<Usuario>>(
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -98,17 +109,13 @@ class _RachaPageState extends State<RachaPage> {
           }
 
           if (snapshot.hasError) {
-            return Center(
-              child: Text('Erro: ${snapshot.error}'),
-            );
+            return Center(child: Text('Erro: ${snapshot.error}'));
           }
 
           final rachas = snapshot.data ?? [];
 
           if (rachas.isEmpty) {
-            return const Center(
-              child: Text('Nenhum racha encontrado'),
-            );
+            return const Center(child: Text('Nenhum racha encontrado'));
           }
 
           return ListView.builder(
@@ -118,16 +125,18 @@ class _RachaPageState extends State<RachaPage> {
 
               return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 20,
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.white,       // cada linha branca
+                  color: Colors.white, // cada linha branca
                   borderRadius: BorderRadius.circular(8),
                 ),
 
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Nome do racha (esquerda)
                     Text(
                       r.nome,
                       style: const TextStyle(
