@@ -49,28 +49,25 @@ class _RachaPageState extends State<RachaPage> {
                 onTap: () {
                   Navigator.pop(context); // fecha o bottom sheet
                   Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PartidaHistoricoPage(
-                              codigoRacha: r.codigo,
-                            ),
-                          ),
-                        );
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          PartidaHistoricoPage(codigoRacha: r.codigo),
+                    ),
+                  );
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.join_full),
-                title: const Text('Vincular Usuário',),
+                title: const Text('Vincular Usuário'),
                 onTap: () {
                   Navigator.pop(context); // fecha o bottom sheet
                   Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => UsuarioListaPage(
-                              codigoRacha: r.codigo,
-                            ),
-                          ),
-                        );
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => UsuarioListaPage(codigoRacha: r.codigo),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 8),
@@ -86,9 +83,7 @@ class _RachaPageState extends State<RachaPage> {
     return Scaffold(
       backgroundColor: Colors.grey[200], // fundo cinza
 
-      appBar: AppBar(
-        title: const Text('Rachas'),
-      ),
+      appBar: AppBar(title: const Text('Rachas')),
 
       body: FutureBuilder<List<Racha>>(
         future: _future,
@@ -98,17 +93,13 @@ class _RachaPageState extends State<RachaPage> {
           }
 
           if (snapshot.hasError) {
-            return Center(
-              child: Text('Erro: ${snapshot.error}'),
-            );
+            return Center(child: Text('Erro: ${snapshot.error}'));
           }
 
           final rachas = snapshot.data ?? [];
 
           if (rachas.isEmpty) {
-            return const Center(
-              child: Text('Nenhum racha encontrado'),
-            );
+            return const Center(child: Text('Nenhum racha encontrado'));
           }
 
           return ListView.builder(
@@ -118,9 +109,12 @@ class _RachaPageState extends State<RachaPage> {
 
               return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 20,
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.white,       // cada linha branca
+                  color: Colors.white, // cada linha branca
                   borderRadius: BorderRadius.circular(8),
                 ),
 

@@ -1,4 +1,3 @@
-import 'package:cpv_app/features/partida/partida_model.dart';
 import 'package:cpv_app/features/partida/partida_placar_page.dart';
 import 'package:cpv_app/features/partida/partida_service.dart';
 import 'package:cpv_app/features/partida/vw_partida_model.dart';

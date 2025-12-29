@@ -1,6 +1,9 @@
 import 'package:cpv_app/features/partida/partida_historico_page.dart';
 import 'package:cpv_app/features/racha/racha_service.dart';
 import 'package:cpv_app/features/usuario/usuario_model.dart';
+import 'package:cpv_app/features/usuario/usuario_service.dart';
+import 'package:cpv_app/features/usuario/usuario_vincular_model.dart';
+import 'package:cpv_app/features/usuario/usuario_vincular_page.dart';
 import 'package:flutter/material.dart';
 
 class UsuarioListaPage extends StatefulWidget {
@@ -19,6 +22,62 @@ class _UsuarioListaPageState extends State<UsuarioListaPage> {
   void initState() {
     super.initState();
     _future = _service.listarUsuario(widget.codigoRacha); // ID do racha
+  }
+
+  void _recarregar() {
+    setState(() {
+      _future = _service.listarUsuario(widget.codigoRacha); // ID do racha
+    });
+  }
+
+  void _confirmarExclusao(Usuario elemento) {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: const Text('Confirma desvincular o usuário?'),
+          content: Text(
+            'Apelido: ${elemento.apelido} \n'
+            'Nome: ${elemento.nome} \n',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // fecha o dialog
+              },
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () async {
+                Navigator.pop(context); // fecha o dialog
+
+                try {
+                  UsuarioVincular vincular = UsuarioVincular(
+                    codigoUsuario: elemento.codigo,
+                    codigoRacha: widget.codigoRacha,
+                  );
+                  await UsuarioService().desvincular(vincular);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Usuário desvinculado com sucesso!'),
+                    ),
+                  );
+
+                  _recarregar();
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Erro ao vincular o usuário: $e')),
+                  );
+                }
+              },
+              child: const Text('Desvincular'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _mostrarOpcoesRacha(Usuario r) {
@@ -64,7 +123,7 @@ class _UsuarioListaPageState extends State<UsuarioListaPage> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  //_confirmarExclusao(partida.codigo);
+                  _confirmarExclusao(r);
                 },
               ),
               const SizedBox(height: 8),
@@ -87,15 +146,13 @@ class _UsuarioListaPageState extends State<UsuarioListaPage> {
             icon: const Icon(Icons.add),
             tooltip: 'Encontrar jogador',
             onPressed: () {
-              /*
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (_) =>
-                      UsuarioBuscarPage(codigoRacha: widget.codigoRacha),
+                      UsuarioVincularPage(codigoRacha: widget.codigoRacha),
                 ),
               );
-              */
             },
           ),
         ],
