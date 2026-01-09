@@ -102,7 +102,7 @@ class _UsuarioVincularPageState extends State<UsuarioVincularPage> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('$e')));
+      ).showSnackBar(SnackBar(content: Text('Erro ao cadastrar usuário: $e')));
     } finally {
       if (mounted) {
         setState(() => _loading = false);
@@ -130,7 +130,7 @@ class _UsuarioVincularPageState extends State<UsuarioVincularPage> {
                     prefixIcon: Icon(Icons.person),
                   ),
                   textInputAction: TextInputAction.next,
-                  validator: (v) =>
+                  validator: (v) => 
                       v == null || v.isEmpty ? 'Informe o login' : null,
                 ),
 

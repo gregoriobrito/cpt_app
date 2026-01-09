@@ -25,83 +25,115 @@ class _PartidasPageState extends State<PartidasPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
-
-      appBar: AppBar(title: const Text('Partidas')),
-
+      backgroundColor: const Color(0xFFF0F4F8),
+      appBar: AppBar(
+        title: const Text("Histórico"),
+        backgroundColor: const Color(0xFF0D47A1), // Azul Navy
+        foregroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+        ),
+      ),
       body: FutureBuilder<List<Partida>>(
         future: _future,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(child: Text('Erro: ${snapshot.error}'));
-          }
-
+          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+          if (snapshot.hasError) return const Center(child: Text('Erro ao carregar'));
           final partidas = snapshot.data ?? [];
 
           if (partidas.isEmpty) {
-            return const Center(child: Text('Nenhuma partida encontrada'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.sports_soccer_outlined, size: 80, color: Colors.grey.shade300),
+                  const SizedBox(height: 10),
+                  Text("Nenhuma partida ainda", style: TextStyle(color: Colors.grey.shade600)),
+                ],
+              ),
+            );
           }
 
-          return ListView(
-            padding: const EdgeInsets.all(12),
-            children: [
-              ...partidas.map((partida) {
-                return Container(
-                  margin: const EdgeInsets.symmetric(vertical: 6),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 18,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          return ListView.builder(
+            padding: const EdgeInsets.all(20),
+            physics: const BouncingScrollPhysics(),
+            itemCount: partidas.length,
+            itemBuilder: (context, index) {
+              final p = partidas[index];
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // Data em Destaque
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
                         children: [
                           Text(
-                            partida.identificador!,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            DateFormat('dd').format(p.data!),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.blue.shade800),
                           ),
                           Text(
-                            DateFormat('dd/MM/yyyy').format(partida.data!),
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[700],
-                            ),
+                            DateFormat('MMM').format(p.data!).toUpperCase(),
+                            style: TextStyle(fontSize: 12, color: Colors.blue.shade800),
                           ),
                         ],
                       ),
-
-                      ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PartidaPlacaPage(
-                              idPartida: partida.codigo, pageBack: 3,
-                            ),
-                          ),
-                        );
-                      },
-                      child: const Text("Alterar"),
                     ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ],
+                    const SizedBox(width: 16),
+                    
+                    // Info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            p.identificador!, // Ex: "Partida #123"
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          const SizedBox(height: 4),
+                          const Row(
+                            children: [
+                              Icon(Icons.check_circle_outline, size: 14, color: Colors.green),
+                              SizedBox(width: 4),
+                              Text("Finalizada", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Botão Ação
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaPlacaPage(idPartida: p.codigo, pageBack: 3,)));
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1976D2),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      ),
+                      child: const Text("Ver Placar"),
+                    ),
+                  ],
+                ),
+              );
+            },
           );
         },
       ),
