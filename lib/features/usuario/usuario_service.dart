@@ -17,9 +17,9 @@ class UsuarioService {
       final jsonBody = jsonDecode(response.body) as Map<String, dynamic>;
       return Usuario.fromJson(jsonBody);
     } else {
-      throw Exception(
-        'Erro ao buscar relatório: ${response.statusCode} | ${response.body}',
-      );
+      final errorBody = jsonDecode(response.body);
+      final message = errorBody['message'] ?? 'Erro desconhecido';
+      throw Exception(message);
     }
   }
 
@@ -33,9 +33,9 @@ class UsuarioService {
       final jsonBody = jsonDecode(response.body);
       return Usuario.fromJson(jsonBody);
     } else {
-      throw Exception(
-        "Erro ao atualizar pontos da partida: ${response.statusCode} | ${response.body}",
-      );
+      final errorBody = jsonDecode(response.body);
+      final message = errorBody['message'] ?? 'Erro desconhecido';
+      throw Exception(message);
     }
   }
 
@@ -46,9 +46,9 @@ class UsuarioService {
       final jsonBody = jsonDecode(response.body) as Map<String, dynamic>;
       return Usuario.fromJson(jsonBody);
     } else {
-      throw Exception(
-        'Erro ao buscar relatório: ${response.statusCode} | ${response.body}',
-      );
+      final errorBody = jsonDecode(response.body);
+      final message = errorBody['message'] ?? 'Erro desconhecido';
+      throw Exception(message);
     }
   }
 
@@ -62,9 +62,9 @@ class UsuarioService {
       final jsonBody = jsonDecode(response.body);
       return RachaUsuario.fromJson(jsonBody);
     } else {
-      throw Exception(
-        "Erro ao vincular usuario: ${response.statusCode} | ${response.body}",
-      );
+      final errorBody = jsonDecode(response.body);
+      final message = errorBody['message'] ?? 'Erro desconhecido';
+      throw Exception(message);
     }
   }
 
@@ -78,9 +78,9 @@ class UsuarioService {
       final jsonBody = jsonDecode(response.body);
       return UsuarioVincular.fromJson(jsonBody);
     } else {
-      throw Exception(
-        "Erro ao vincular usuario: ${response.statusCode} | ${response.body}",
-      );
+      final errorBody = jsonDecode(response.body);
+      final message = errorBody['message'] ?? 'Erro desconhecido';
+      throw Exception(message);
     }
   }
 }

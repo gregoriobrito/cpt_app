@@ -102,7 +102,7 @@ class _UsuarioVincularPageState extends State<UsuarioVincularPage> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Erro ao cadastrar usuário: $e')));
+      ).showSnackBar(SnackBar(content: Text('$e')));
     } finally {
       if (mounted) {
         setState(() => _loading = false);
