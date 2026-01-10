@@ -1,5 +1,5 @@
-import 'dart:ui'; // Para o efeito de vidro (Blur)
-import 'dart:math' as math; // Para as animações circulares
+import 'dart:ui'; 
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
@@ -21,10 +21,12 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
   final _apelidoController = TextEditingController();
   final _senhaController = TextEditingController();
 
-  // Cores do Tema "Vôlei Night"
-  final Color _cyanLight = const Color(0xFF00E5FF);
-  final Color _purpleLight = const Color(0xFFD500F9);
-  final Color _blueLight = const Color(0xFF2979FF);
+  // --- DESIGN SYSTEM (Igual Main.dart) ---
+  final Color _backgroundColor = const Color(0xFFF5F7FA);
+  final Color _primaryBlue = const Color(0xFF2979FF);
+  final Color _darkText = const Color(0xFF1E2230);
+  final Color _pastelBlue = const Color(0xFFE3F2FD);
+  final Color _pastelCyan = const Color(0xFFE1F5FE);
 
   // Controladores de Animação
   late AnimationController _lightsController;
@@ -39,19 +41,19 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
   void initState() {
     super.initState();
     
-    // Configura a barra de status transparente
+    // Status Bar Dark Icons
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
+      statusBarIconBrightness: Brightness.dark,
     ));
 
-    // 1. Animação das Luzes de Fundo (Loop Infinito)
+    // 1. Animação das Luzes de Fundo
     _lightsController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 10),
     )..repeat();
 
-    // 2. Animação de Entrada do Card (Fade + Slide)
+    // 2. Animação de Entrada
     _entranceAnimController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -87,7 +89,7 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
     setState(() => _loading = true);
 
     try {
-      final login = _loginController.text.trim();
+      final login = _loginController.text.trim().toUpperCase();
       final nome = _nomeController.text.trim();
       final apelido = _apelidoController.text.trim();
       final senha = _senhaController.text;
@@ -99,8 +101,8 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Conta criada com sucesso! Bem-vindo ao time.', style: TextStyle(color: Colors.white)),
-          backgroundColor: Colors.green.withOpacity(0.8),
+          content: const Text('Conta criada! Faça login para continuar.', style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -111,7 +113,7 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Erro ao cadastrar: $e', style: const TextStyle(color: Colors.white)),
-          backgroundColor: Colors.redAccent.withOpacity(0.8),
+          backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -125,10 +127,10 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF020510), // Fundo Preto Azulado
+      backgroundColor: _backgroundColor, // Fundo Claro
       body: Stack(
         children: [
-          // --- CAMADA 1: LUZES ANIMADAS (Fundo) ---
+          // --- CAMADA 1: FUNDO ANIMADO (Suave) ---
           AnimatedBuilder(
             animation: _lightsController,
             builder: (context, child) {
@@ -137,17 +139,12 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
                   Positioned(
                     top: size.height * 0.1,
                     left: size.width * 0.1 + (math.cos(_lightsController.value * 2 * math.pi) * 30),
-                    child: _buildLightBlob(_purpleLight, 300),
+                    child: _buildLightBlob(_pastelBlue, 300),
                   ),
                   Positioned(
                     top: size.height * 0.4,
                     right: size.width * -0.2,
-                    child: _buildLightBlob(_cyanLight, 350),
-                  ),
-                  Positioned(
-                    bottom: -50,
-                    left: size.width * 0.2,
-                    child: _buildLightBlob(_blueLight, 400),
+                    child: _buildLightBlob(_pastelCyan, 350),
                   ),
                 ],
               );
@@ -163,10 +160,9 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     
-                    // 1. Header: Botão Voltar e Ícone de Destaque
+                    // 1. Header: Botão Voltar e Ícone
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         InkWell(
                           onTap: () => Navigator.pop(context),
@@ -174,34 +170,33 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Row(
-                              children: const [
-                                Icon(Icons.arrow_back_ios_new, color: Colors.white70, size: 20),
-                                SizedBox(width: 8),
-                                Text("Voltar", style: TextStyle(color: Colors.white70, fontSize: 16)),
+                              children: [
+                                Icon(Icons.arrow_back_ios_new, color: _darkText, size: 20),
+                                const SizedBox(width: 8),
+                                Text("Voltar", style: TextStyle(color: _darkText, fontSize: 16, fontWeight: FontWeight.w600)),
                               ],
                             ),
                           ),
                         ),
                         
-                        // Ícone Grande no Círculo Neon
+                        // Ícone com fundo azul suave
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(0.05),
-                            border: Border.all(color: _cyanLight.withOpacity(0.5), width: 2),
+                            color: Colors.white,
                             boxShadow: [
-                              BoxShadow(color: _cyanLight.withOpacity(0.4), blurRadius: 20, spreadRadius: 2)
+                              BoxShadow(color: _primaryBlue.withOpacity(0.1), blurRadius: 20, spreadRadius: 2)
                             ]
                           ),
-                          child: const Icon(Icons.person_add_alt_1_rounded, size: 32, color: Colors.white),
+                          child: Icon(Icons.person_add_alt_1_rounded, size: 30, color: _primaryBlue),
                         ),
                       ],
                     ),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 30),
 
-                    // 2. Título Animado (Typewriter)
+                    // 2. Título Animado
                     SizedBox(
                       height: 35,
                       child: AnimatedTextKit(
@@ -210,13 +205,12 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
                             'NOVA CONTA',
                             speed: const Duration(milliseconds: 100),
                             cursor: '_',
-                            textStyle: const TextStyle(
-                              fontSize: 26, // Fonte Grande mantida
+                            textStyle: TextStyle(
+                              fontSize: 26,
                               fontWeight: FontWeight.w900,
-                              color: Colors.white,
+                              color: _darkText, // Texto Escuro
                               fontFamily: 'Roboto',
                               letterSpacing: 2.0,
-                              shadows: [Shadow(color: Color(0xFF00E5FF), blurRadius: 15)]
                             ),
                           ),
                         ],
@@ -226,49 +220,59 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
 
                     const SizedBox(height: 20),
 
-                    // 3. Cartão de Vidro (Formulário)
+                    // 3. Card Branco Clean (Substituindo o Vidro Escuro)
                     FadeTransition(
                       opacity: _fadeAnimation,
                       child: SlideTransition(
                         position: _slideAnimation,
-                        child: _buildPremiumGlassCard(
+                        child: Container(
+                          padding: const EdgeInsets.all(28),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _primaryBlue.withOpacity(0.1), // Sombra Suave
+                                blurRadius: 30,
+                                offset: const Offset(0, 15),
+                              ),
+                            ],
+                          ),
                           child: Form(
                             key: _formKey,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 
-                                // Seção: Dados Pessoais
                                 _buildSectionLabel("PESSOAL"),
                                 const SizedBox(height: 10),
                                 
-                                _buildNeonInput(
+                                _buildModernInput(
                                   controller: _nomeController,
                                   label: "Nome Completo",
                                   icon: Icons.badge_outlined,
                                 ),
-                                const SizedBox(height: 12), // Espaço equilibrado
+                                const SizedBox(height: 16),
                                 
-                                _buildNeonInput(
+                                _buildModernInput(
                                   controller: _apelidoController,
                                   label: "Apelido (Nome na quadra)",
                                   icon: Icons.sports_handball_outlined,
                                 ),
 
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 24),
                                 
-                                // Seção: Dados de Acesso
                                 _buildSectionLabel("ACESSO"),
                                 const SizedBox(height: 10),
 
-                                _buildNeonInput(
+                                _buildModernInput(
                                   controller: _loginController,
                                   label: "Usuário / Login",
                                   icon: Icons.person_outline,
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 16),
 
-                                _buildNeonInput(
+                                _buildModernInput(
                                   controller: _senhaController,
                                   label: "Senha",
                                   icon: Icons.lock_outline,
@@ -277,10 +281,10 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
                                   onToggleVisibility: () => setState(() => _obscureSenha = !_obscureSenha),
                                 ),
 
-                                const SizedBox(height: 24),
+                                const SizedBox(height: 30),
 
-                                // Botão de Cadastro
-                                _buildGlowButton(),
+                                // Botão Gradiente
+                                _buildGradientButton(),
                               ],
                             ),
                           ),
@@ -297,65 +301,24 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
     );
   }
 
-  // --- WIDGETS VISUAIS ---
+  // --- WIDGETS ATUALIZADOS ---
 
-  // 1. Bolhas de Luz (Fundo)
   Widget _buildLightBlob(Color color, double size) {
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [color.withOpacity(0.5), color.withOpacity(0.0)],
-          stops: const [0.0, 0.7],
-        ),
+        color: color.withOpacity(0.6), // Mais opaco para o tema claro
+        boxShadow: [BoxShadow(color: color, blurRadius: 60, spreadRadius: 10)],
       ),
-    );
-  }
-
-  // 2. Cartão de Vidro (Premium)
-  Widget _buildPremiumGlassCard({required Widget child}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20), // Blur forte e bonito
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withOpacity(0.10), // Reflexo superior
-                Colors.white.withOpacity(0.02), // Mais transparente embaixo
-              ],
-            ),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2), // Borda fina de vidro
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.5),
-                blurRadius: 40,
-                spreadRadius: -10,
-                offset: const Offset(0, 20),
-              ),
-              BoxShadow(
-                color: _cyanLight.withOpacity(0.1), // Glow sutil na borda
-                blurRadius: 20,
-              ),
-            ],
-          ),
-          child: child,
-        ),
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        child: Container(color: Colors.transparent),
       ),
     );
   }
 
-  // 3. Título de Seção (Pequeno e Neon)
   Widget _buildSectionLabel(String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 2),
@@ -364,15 +327,15 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: _cyanLight.withOpacity(0.8),
+          color: Colors.grey.shade400, // Cinza suave
           letterSpacing: 1.5,
         ),
       ),
     );
   }
 
-  // 4. Input Neon Moderno
-  Widget _buildNeonInput({
+  // Input Moderno (Igual ao Login e Main)
+  Widget _buildModernInput({
     required TextEditingController controller,
     required String label,
     required IconData icon,
@@ -382,60 +345,66 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.4),
+        color: _backgroundColor, // Fundo cinza clarinho
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: TextFormField(
         controller: controller,
         obscureText: obscureText,
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-        cursorColor: _cyanLight,
+        style: TextStyle(color: _darkText, fontWeight: FontWeight.w600),
+        cursorColor: _primaryBlue,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
-          prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.7)),
+          labelStyle: TextStyle(color: Colors.grey.shade500),
+          prefixIcon: Icon(icon, color: _primaryBlue),
           suffixIcon: isPassword
               ? IconButton(
                   icon: Icon(
                     obscureText ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.grey,
                   ),
                   onPressed: onToggleVisibility,
                 )
               : null,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14), // Padding confortável
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: _cyanLight, width: 1.5),
+            borderSide: BorderSide(color: _primaryBlue, width: 1.5),
           ),
+          fillColor: Colors.white,
+          filled: true,
         ),
         validator: (v) {
-          if (v == null || v.trim().isEmpty) return 'Campo obrigatório';
-          if (isPassword && v.length < 4) return 'Mínimo 4 caracteres';
+          if (v == null || v.trim().isEmpty) return 'Obrigatório';
+          if (isPassword && v.length < 3) return 'Muito curta';
           return null;
         },
       ),
     );
   }
 
-  // 5. Botão Grande com Brilho
-  Widget _buildGlowButton() {
+  Widget _buildGradientButton() {
     return GestureDetector(
       onTap: _loading ? null : _cadastrar,
       child: Container(
         width: double.infinity,
-        height: 54, // Altura padrão boa para o dedo
+        height: 56,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
-            colors: [const Color(0xFF00E5FF), const Color(0xFF2979FF)],
+            colors: [_primaryBlue, const Color(0xFF00B0FF)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: _cyanLight.withOpacity(0.4),
-              blurRadius: 20,
+              color: _primaryBlue.withOpacity(0.4),
+              blurRadius: 15,
               offset: const Offset(0, 5),
             ),
           ],
@@ -448,8 +417,8 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
                   style: TextStyle(
                     color: Colors.white, 
                     fontSize: 16, 
-                    fontWeight: FontWeight.w900, 
-                    letterSpacing: 1.5
+                    fontWeight: FontWeight.bold, 
+                    letterSpacing: 1.2
                   ),
                 ),
         ),

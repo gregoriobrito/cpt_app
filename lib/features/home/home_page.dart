@@ -7,7 +7,7 @@ import 'package:cpv_app/features/partida/partida_racha_page.dart';
 import 'package:cpv_app/features/racha/racha_page.dart';
 import 'package:cpv_app/features/relatorio/relatorio_racha_page.dart';
 import 'package:cpv_app/features/usuario/usuario_service.dart';
-import 'package:cpv_app/main.dart';
+import 'package:cpv_app/main.dart'; // Para navegar de volta ao login se precisar
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,10 +19,11 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late Future<String> _usuarioFuture;
   
-  // Cores do Tema
-  final Color _primaryBlue = const Color(0xFF2979FF);
-  final Color _darkText = const Color(0xFF1E2230);
-
+  // --- DESIGN SYSTEM (Consistência com main.dart) ---
+  final Color _backgroundColor = const Color(0xFFF5F7FA); // Branco Gelo
+  final Color _primaryBlue = const Color(0xFF2979FF); // Azul Elétrico
+  final Color _darkText = const Color(0xFF1E2230); // Texto Escuro
+  
   // Animações
   late AnimationController _lightsController;
   late AnimationController _entranceController;
@@ -30,6 +31,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    // Status Bar escura para fundo claro
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
@@ -37,10 +39,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     _usuarioFuture = _buscarNomeUsuario();
 
-    // Animação de Fundo (Mesma do Login para consistência)
+    // Animação de Fundo
     _lightsController = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat(reverse: true);
     
-    // Animação de Entrada dos Cards
+    // Animação de Entrada em Cascata
     _entranceController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000))..forward();
   }
 
@@ -63,7 +65,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   void _logout(BuildContext context) async {
     await ApiClient().logout();
-    if(mounted) Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginPage()), (r) => false);
+    if(mounted) {
+      Navigator.pushAndRemoveUntil(
+        context, 
+        MaterialPageRoute(builder: (_) => const LoginPage()), 
+        (r) => false
+      );
+    }
   }
 
   @override
@@ -71,18 +79,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA), // Branco Gelo
+      backgroundColor: _backgroundColor,
       body: Stack(
         children: [
-          // --- FUNDO ANIMADO (BLOBS) ---
+          // --- FUNDO ANIMADO (Cores Pastéis Suaves) ---
           AnimatedBuilder(
             animation: _lightsController,
             builder: (context, child) {
               return Stack(
                 children: [
-                  Positioned(top: -50, right: -50, child: _buildLightBlob(const Color(0xFFE3F2FD), 300)),
-                  Positioned(top: size.height * 0.3, left: -60, child: _buildLightBlob(const Color(0xFFE1F5FE), 350)),
-                  Positioned(bottom: -50, right: -20, child: _buildLightBlob(const Color(0xFFEDE7F6), 400)),
+                  Positioned(top: -50, right: -50, child: _buildLightBlob(const Color(0xFFE3F2FD), 300)), // Azul bebê
+                  Positioned(top: size.height * 0.3, left: -60, child: _buildLightBlob(const Color(0xFFE1F5FE), 350)), // Ciano bebê
+                  Positioned(bottom: -50, right: -20, child: _buildLightBlob(const Color(0xFFEDE7F6), 400)), // Roxo bebê
                 ],
               );
             },
@@ -101,7 +109,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     children: [
                       Container(
                         padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)]),
+                        decoration: BoxDecoration(
+                          color: Colors.white, 
+                          borderRadius: BorderRadius.circular(12), 
+                          boxShadow: [
+                            BoxShadow(color: _primaryBlue.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 5))
+                          ]
+                        ),
                         child: Icon(Icons.dashboard_rounded, color: _primaryBlue),
                       ),
                       IconButton(
@@ -124,7 +138,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             TypewriterAnimatedText(
                               snapshot.data!.toUpperCase(),
                               speed: const Duration(milliseconds: 150),
-                              textStyle: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: _darkText, fontFamily: 'Roboto'),
+                              textStyle: TextStyle(
+                                fontSize: 32, 
+                                fontWeight: FontWeight.w900, 
+                                color: _darkText, 
+                                fontFamily: 'Roboto'
+                              ),
                             )
                           ],
                           isRepeatingAnimation: false,
@@ -135,7 +154,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   
                   const SizedBox(height: 30),
 
-                  // LISTA DE CARDS
+                  // LISTA DE CARDS (Menu Principal)
                   Expanded(
                     child: ListView(
                       physics: const BouncingScrollPhysics(),
@@ -158,14 +177,24 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget _buildLightBlob(Color color, double size) {
     return Container(
       width: size, height: size,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: color.withOpacity(0.6), boxShadow: [BoxShadow(color: color, blurRadius: 60, spreadRadius: 10)]),
-      child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40), child: Container(color: Colors.transparent)),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle, 
+        color: color.withOpacity(0.8), 
+        boxShadow: [BoxShadow(color: color, blurRadius: 60, spreadRadius: 10)]
+      ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40), 
+        child: Container(color: Colors.transparent)
+      ),
     );
   }
 
-  Widget _buildMenuCard(int index, String title, String subtitle, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildMenuCard(int index, String title, String subtitle, IconData icon, Color accentColor, VoidCallback onTap) {
+    // Animação staggered (um entra depois do outro)
     return SlideTransition(
-      position: Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(CurvedAnimation(parent: _entranceController, curve: Interval(index * 0.2, 1.0, curve: Curves.easeOutCubic))),
+      position: Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
+        CurvedAnimation(parent: _entranceController, curve: Interval(index * 0.2, 1.0, curve: Curves.easeOutCubic))
+      ),
       child: FadeTransition(
         opacity: _entranceController,
         child: Container(
@@ -173,7 +202,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
-            boxShadow: [BoxShadow(color: color.withOpacity(0.12), blurRadius: 25, offset: const Offset(0, 10))],
+            // Sombra Padrão Enterprise
+            boxShadow: [
+              BoxShadow(
+                color: _primaryBlue.withOpacity(0.08), 
+                blurRadius: 25, 
+                offset: const Offset(0, 10)
+              )
+            ],
           ),
           child: Material(
             color: Colors.transparent,
@@ -186,8 +222,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(16)),
-                      child: Icon(icon, color: color, size: 30),
+                      decoration: BoxDecoration(
+                        color: accentColor.withOpacity(0.1), 
+                        borderRadius: BorderRadius.circular(16)
+                      ),
+                      child: Icon(icon, color: accentColor, size: 30),
                     ),
                     const SizedBox(width: 20),
                     Expanded(
