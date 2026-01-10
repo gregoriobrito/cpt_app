@@ -15,6 +15,10 @@ class _RelatorioRachaPageState extends State<RelatorioRachaPage> {
   final _service = RachaService();
   late Future<List<Racha>> _future;
 
+  // Design
+  final Color _bg = const Color(0xFFF5F7FA);
+  final Color _blue = const Color(0xFF2979FF);
+
   @override
   void initState() {
     super.initState();
@@ -24,63 +28,52 @@ class _RelatorioRachaPageState extends State<RelatorioRachaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200], // fundo cinza
-
+      backgroundColor: _bg,
       appBar: AppBar(
-        title: const Text('Estatísticas - Rachas'),
+        title: const Text('ESTATÍSTICAS', style: TextStyle(color: Color(0xFF1E2230), fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.2)),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF1E2230)), onPressed: () => Navigator.pop(context)),
       ),
-
       body: FutureBuilder<List<Racha>>(
         future: _future,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(
-              child: Text('Erro: ${snapshot.error}'),
-            );
-          }
-
+          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
           final rachas = snapshot.data ?? [];
 
-          if (rachas.isEmpty) {
-            return const Center(
-              child: Text('Nenhum racha encontrado'),
-            );
-          }
+          if (rachas.isEmpty) return const Center(child: Text('Nenhum racha encontrado'));
 
-          return ListView.builder(
+          return ListView.separated(
+            padding: const EdgeInsets.all(24),
             itemCount: rachas.length,
+            separatorBuilder: (_,__) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final r = rachas[index];
-
               return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,       // cada linha branca
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [BoxShadow(color: _blue.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 8))],
                 ),
-
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Nome do racha (esquerda)
-                    Text(
-                      r.nome,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(color: _blue.withOpacity(0.1), shape: BoxShape.circle),
+                          child: Icon(Icons.bar_chart_rounded, color: _blue),
+                        ),
+                        const SizedBox(width: 16),
+                        Text(r.nome, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E2230))),
+                      ],
                     ),
-
-                    ElevatedButton(
-                      onPressed: () {
-                        _abrirBottomSheet(context, r.codigo);
-                      },
-                      child: const Text("Estatísticas"),
+                    IconButton(
+                      icon: const Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Colors.grey),
+                      onPressed: () => _abrirBottomSheet(context, r.codigo),
                     ),
                   ],
                 ),
@@ -93,109 +86,68 @@ class _RelatorioRachaPageState extends State<RelatorioRachaPage> {
   }
 
   void _abrirBottomSheet(BuildContext context, int codigoRacha) {
-  showModalBottomSheet(
-    context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    ),
-    builder: (_) {
-      return Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+                const SizedBox(height: 20),
+                const Text('Filtrar Relatório', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E2230))),
+                const SizedBox(height: 24),
+                
+                _buildFilterBtn(context, "Geral", codigoRacha, 1, Icons.dashboard_outlined),
+                const SizedBox(height: 12),
+                _buildFilterBtn(context, "Por Data", codigoRacha, 2, Icons.calendar_today_outlined),
+                const SizedBox(height: 12),
+                _buildFilterBtn(context, "Mensal", codigoRacha, 3, Icons.calendar_view_month_outlined),
+                const SizedBox(height: 12),
+                _buildFilterBtn(context, "Anual", codigoRacha, 4, Icons.calendar_today_rounded),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFilterBtn(BuildContext context, String label, int id, int tipo, IconData icon) {
+    return SizedBox(
+      width: double.infinity,
+      height: 54,
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.pop(context);
+          Navigator.push(context, MaterialPageRoute(builder: (_) => RelatorioEstatisticaPage(idRacha: id, tipoRacha: tipo)));
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFF5F7FA), // Botão cinza claro
+          foregroundColor: const Color(0xFF1E2230), // Texto escuro
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 20)
+        ),
+        child: Row(
           children: [
-            // Título do sheet
-            const Text(
-              'Selecionar tipo de relatório',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // fecha o bottom sheet
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => RelatorioEstatisticaPage(
-                        idRacha: codigoRacha, tipoRacha: 1,
-                      ),
-                    ),
-                  );
-                },
-                child: const Text("Geral"),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // fecha o bottom sheet
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => RelatorioEstatisticaPage(
-                        idRacha: codigoRacha, tipoRacha: 2,
-                      ),
-                    ),
-                  );
-                },
-                child: const Text("Data"),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // fecha o bottom sheet
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => RelatorioEstatisticaPage(
-                        idRacha: codigoRacha, tipoRacha: 3,
-                      ),
-                    ),
-                  );
-                },
-                child: const Text("Mes"),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // fecha o bottom sheet
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => RelatorioEstatisticaPage(
-                        idRacha: codigoRacha, tipoRacha: 4,
-                      ),
-                    ),
-                  );
-                },
-                child: const Text("Ano"),
-              ),
-            ),
+            Icon(icon, color: _blue),
+            const SizedBox(width: 16),
+            Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+            const Spacer(),
+            const Icon(Icons.arrow_forward_rounded, color: Colors.grey, size: 18),
           ],
         ),
-      );
-    },
-  );
-}
+      ),
+    );
+  }
 }
