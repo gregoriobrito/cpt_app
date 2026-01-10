@@ -2,7 +2,6 @@ import 'package:cpv_app/features/partida/partida_historico_page.dart';
 import 'package:cpv_app/features/partida/partida_racha_page.dart';
 import 'package:cpv_app/features/partida/partida_usuario_page.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:cpv_app/features/partida/partida_model.dart';
 import 'package:cpv_app/features/partida/partida_ponto_time_detalhe_model.dart';
 import 'package:cpv_app/features/partida/partida_ponto_time_model.dart';
@@ -21,9 +20,11 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
   final _service = PartidaService();
   late Future<Partida> _future;
   Partida? _partida;
-  
-  // Guardamos os pontos como inteiros, não controllers de texto (UX Melhor)
   List<int> _pontuacoes = [];
+
+  // Cores
+  final Color _bg = const Color(0xFFF5F7FA);
+  final Color _blue = const Color(0xFF2979FF);
 
   @override
   void initState() {
@@ -33,59 +34,38 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
 
   void _initPontuacoesIfNeeded(Partida partida) {
     if (_pontuacoes.isNotEmpty) return;
-    final times = partida.listaTime ?? [];
-    // Inicializa a lista de inteiros com os valores atuais
-    _pontuacoes = times.map((t) => t.pontuacao ?? 0).toList();
+    _pontuacoes = partida.listaTime?.map((t) => t.pontuacao ?? 0).toList() ?? [];
   }
 
   void _alterarPontos(int index, int delta) {
     setState(() {
-      int novoValor = _pontuacoes[index] + delta;
-      if (novoValor < 0) novoValor = 0; // Não permite negativo
-      _pontuacoes[index] = novoValor;
+      int novo = _pontuacoes[index] + delta;
+      if (novo >= 0) _pontuacoes[index] = novo;
     });
   }
 
   Future<void> _salvarPlacar() async {
-    if (_partida == null || _partida!.listaTime == null) return;
+    if (_partida?.listaTime == null) return;
     
-    final lista = <PartidaPontoTimeDetalhe>[];
-    for (int i = 0; i < _partida!.listaTime!.length; i++) {
-      lista.add(PartidaPontoTimeDetalhe(
-        idTime: _partida!.listaTime![i].codigo, 
-        pontos: _pontuacoes[i],
-      ));
-    }
+    final lista = List.generate(_partida!.listaTime!.length, (i) {
+      return PartidaPontoTimeDetalhe(idTime: _partida!.listaTime![i].codigo, pontos: _pontuacoes[i]);
+    });
 
     try {
       await _service.atualizarPontos(PartidaPontoTime(lista: lista));
       if(!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Placar atualizado com sucesso!'), backgroundColor: Colors.green),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Placar atualizado!'), backgroundColor: Colors.green));
       _voltarTela(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro: $e')));
     }
   }
 
   void _voltarTela(BuildContext context) {
     if (widget.pageBack == 1) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) =>
-              PartidaHistoricoPage(codigoRacha: _partida!.codigoRacha!),
-        ),
-      );
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(codigoRacha: _partida!.codigoRacha!)));
     } else if (widget.pageBack == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) =>
-              PartidaUsuarioPage(codigoRacha: _partida!.codigoRacha!),
-        ),
-      );
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => PartidaUsuarioPage(codigoRacha: _partida!.codigoRacha!)));
     }
   }
 
@@ -93,162 +73,111 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) {
-        if (!didPop) _voltarTela(context);
-      },
+      onPopInvoked: (didPop) { if (!didPop) _voltarTela(context); },
       child: Scaffold(
-      backgroundColor: const Color(0xFF0D47A1), // Fundo azul escuro (Estádio)
-      appBar: AppBar(
-        title: const Text("Placar Ao Vivo"),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        foregroundColor: Colors.white,
-      ),
-      body: FutureBuilder<Partida>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator(color: Colors.white));
-          if (snapshot.hasError) return const Center(child: Text("Erro ao carregar", style: TextStyle(color: Colors.white)));
-          
-          final partida = snapshot.data;
-          if (partida == null) return const SizedBox();
+        backgroundColor: _bg,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87), onPressed: () => _voltarTela(context)),
+          title: const Text("Placar Ao Vivo", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+          centerTitle: true,
+        ),
+        body: FutureBuilder<Partida>(
+          future: _future,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+            _partida = snapshot.data;
+            _initPontuacoesIfNeeded(_partida!);
+            final times = _partida!.listaTime ?? [];
 
-          _partida = partida;
-          _initPontuacoesIfNeeded(partida);
-          final times = partida.listaTime ?? [];
-
-          return Column(
-            children: [
-              // Info do Racha
-              Text(
-                partida.racha?.nome ?? "Partida",
-                style: const TextStyle(color: Colors.white70, fontSize: 16),
-              ),
-              const SizedBox(height: 30),
-
-              // --- ÁREA DO PLACAR ---
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(top: 20),
-                  padding: const EdgeInsets.all(24),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF0F4F8), // Fundo claro curvo
-                    borderRadius: BorderRadius.only(topLeft: Radius.circular(40), topRight: Radius.circular(40)),
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(20)),
+                    child: Text(_partida?.racha?.nome ?? "Partida", style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.bold)),
                   ),
-                  child: Column(
-                    children: [
-                      // Renderiza os times (Ideal para 2 times)
-                      if (times.length >= 2) ...[
-                        _buildTimeScoreRow(0, times[0].identificador, Colors.blue),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 20),
-                          child: Text("VS", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.grey)),
-                        ),
-                        _buildTimeScoreRow(1, times[1].identificador, Colors.green),
-                      ] else ...[
-                        // Fallback se tiver quantidade diferente de times
-                        Expanded(
-                           child: ListView.separated(
-                             itemCount: times.length,
-                             separatorBuilder: (_,__) => const Divider(),
-                             itemBuilder: (ctx, idx) => _buildTimeScoreRow(idx, times[idx].identificador, Colors.blue),
-                           ),
-                        )
-                      ],
-                      
-                      const Spacer(),
-                      
-                      // Botão Salvar Gigante
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton.icon(
-                          onPressed: _salvarPlacar,
-                          icon: const Icon(Icons.save_rounded),
-                          label: const Text("ATUALIZAR PLACAR", style: TextStyle(fontWeight: FontWeight.bold)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0D47A1),
-                            foregroundColor: Colors.white,
-                            elevation: 5,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          ),
-                        ),
+                  const SizedBox(height: 30),
+
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: times.length,
+                      separatorBuilder: (_,__) => const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        child: Text("VS", textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.grey)),
                       ),
-                      const SizedBox(height: 20),
-                    ],
+                      itemBuilder: (ctx, idx) => _buildCardTime(idx, times[idx].identificador, idx == 0 ? _blue : Colors.green),
+                    ),
                   ),
-                ),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: _salvarPlacar,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _blue,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        elevation: 10,
+                        shadowColor: _blue.withOpacity(0.4),
+                      ),
+                      child: const Text("ATUALIZAR PLACAR", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
               ),
-            ],
-          );
-        },
+            );
+          },
+        ),
       ),
-    ),
     );
   }
 
-  Widget _buildTimeScoreRow(int index, String nomeTime, Color color) {
+  Widget _buildCardTime(int index, String nome, Color cor) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.grey.shade200, blurRadius: 10, offset: const Offset(0, 5))],
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [BoxShadow(color: cor.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 10))],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
         children: [
-          // Nome do Time
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "TIME ${index + 1}",
-                  style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  nomeTime,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-
-          // Controlador Numérico
+          Text(nome.toUpperCase(), style: TextStyle(color: cor, fontWeight: FontWeight.bold, letterSpacing: 1)),
+          const SizedBox(height: 16),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _circleBtn(Icons.remove, () => _alterarPontos(index, -1)),
-              SizedBox(
-                width: 60,
-                child: Text(
-                  "${_pontuacoes[index]}",
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFF263238)),
-                ),
+              _btn(Icons.remove, () => _alterarPontos(index, -1)),
+              Container(
+                width: 80,
+                alignment: Alignment.center,
+                child: Text("${_pontuacoes[index]}", style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w900, color: Color(0xFF1E2230))),
               ),
-              _circleBtn(Icons.add, () => _alterarPontos(index, 1), isAdd: true),
+              _btn(Icons.add, () => _alterarPontos(index, 1), isAdd: true, color: cor),
             ],
-          )
+          ),
         ],
       ),
     );
   }
 
-  Widget _circleBtn(IconData icon, VoidCallback onTap, {bool isAdd = false}) {
+  Widget _btn(IconData icon, VoidCallback onTap, {bool isAdd = false, Color? color}) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(30),
+      borderRadius: BorderRadius.circular(50),
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isAdd ? const Color(0xFF0D47A1) : Colors.grey.shade200,
+          color: isAdd ? (color ?? Colors.blue) : Colors.grey.shade100,
           shape: BoxShape.circle,
+          boxShadow: isAdd ? [BoxShadow(color: color!.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))] : [],
         ),
-        child: Icon(icon, color: isAdd ? Colors.white : Colors.black54, size: 24),
+        child: Icon(icon, color: isAdd ? Colors.white : Colors.grey, size: 28),
       ),
     );
   }

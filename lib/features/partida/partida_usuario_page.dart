@@ -19,8 +19,13 @@ class _PartidaUsuarioPageState extends State<PartidaUsuarioPage> {
   final _service = RachaService();
   late Future<List<Usuario>> _future;
 
-  int _timeAtual = 1; // 1 ou 2
-  final Map<int, int> _timePorJogador = {}; // Map<ID_JOGADOR, ID_TIME>
+  int _timeAtual = 1; 
+  final Map<int, int> _timePorJogador = {}; 
+
+  // --- DESIGN SYSTEM ---
+  final Color _bg = const Color(0xFFF5F7FA);
+  final Color _blue = const Color(0xFF2979FF);
+  final Color _green = const Color(0xFF00C853); // Verde Vibrante
 
   @override
   void initState() {
@@ -32,35 +37,23 @@ class _PartidaUsuarioPageState extends State<PartidaUsuarioPage> {
     setState(() {
       final timeDoJogador = _timePorJogador[idJogador];
       if (timeDoJogador == _timeAtual) {
-        _timePorJogador.remove(idJogador); // Desmarca
+        _timePorJogador.remove(idJogador);
       } else {
-        _timePorJogador[idJogador] = _timeAtual; // Marca no time atual
+        _timePorJogador[idJogador] = _timeAtual;
       }
     });
   }
 
-  void _trocarTime() {
-    setState(() {
-      _timeAtual = (_timeAtual == 1) ? 2 : 1;
-    });
-  }
+  void _trocarTime() => setState(() => _timeAtual = (_timeAtual == 1) ? 2 : 1);
 
-  int _contarJogadores(int time) {
-    return _timePorJogador.values.where((t) => t == time).length;
-  }
+  int _contarJogadores(int time) => _timePorJogador.values.where((t) => t == time).length;
 
   void _cadastrarPartida() async {
     final t1 = _timePorJogador.entries.where((e) => e.value == 1).map((e) => e.key).toList();
     final t2 = _timePorJogador.entries.where((e) => e.value == 2).map((e) => e.key).toList();
 
     if (t1.isEmpty || t2.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Selecione pelo menos 1 jogador para cada time!'),
-          backgroundColor: Colors.red.shade400,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Selecione jogadores para os dois times!'), backgroundColor: Colors.red));
       return;
     }
 
@@ -74,242 +67,163 @@ class _PartidaUsuarioPageState extends State<PartidaUsuarioPage> {
 
     try {
       showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
-      
       final partida = await PartidaService().cadastrar(request);
-      
       if (!mounted) return;
-      Navigator.pop(context); // Fecha loading
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => PartidaPlacaPage(idPartida: partida.codigo, pageBack: 2)),
-      );
+      Navigator.pop(context);
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => PartidaPlacaPage(idPartida: partida.codigo, pageBack: 2)));
     } catch (e) {
       if (!mounted) return;
-      Navigator.pop(context); // Fecha loading se der erro
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Erro: $e"), backgroundColor: Colors.red));
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Erro: $e")));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Cores temáticas para cada time
-    final corTime = _timeAtual == 1 ? const Color(0xFF1976D2) : const Color(0xFF2E7D32);
+    final corAtiva = _timeAtual == 1 ? _blue : _green;
     final nomeTime = _timeAtual == 1 ? "Time Azul" : "Time Verde";
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F4F8),
-      body: Column(
-        children: [
-          // --- HEADER DINÂMICO ---
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 400),
-            height: 180,
-            decoration: BoxDecoration(
-              color: corTime,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
-              ),
-              boxShadow: [BoxShadow(color: corTime.withOpacity(0.4), blurRadius: 15, offset: const Offset(0, 5))],
-            ),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: Column(
-                  children: [
-                    Row(
+      backgroundColor: _bg,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // --- HEADER FLUTUANTE ---
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      InkWell(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)]),
+                          child: const Icon(Icons.arrow_back_ios_new, size: 18),
+                        ),
+                      ),
+                      const Spacer(),
+                      const Text("Montar Equipes", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                      const Spacer(),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // CARD DO TIME ATUAL
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeInOut,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(colors: [corAtiva, corAtiva.withOpacity(0.8)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [BoxShadow(color: corAtiva.withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 10))],
+                    ),
+                    child: Row(
                       children: [
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                          onPressed: () => Navigator.pop(context),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                          child: const Icon(Icons.shield, color: Colors.white),
                         ),
-                        Expanded(
-                          child: Text(
-                            "Montar Equipes",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("SELECIONANDO", style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 10, letterSpacing: 1.5)),
+                            Text(nomeTime.toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
+                          ],
                         ),
-                        const SizedBox(width: 48),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                          child: Text("${_contarJogadores(_timeAtual)}", style: TextStyle(color: corAtiva, fontWeight: FontWeight.bold, fontSize: 16)),
+                        )
                       ],
                     ),
-                    const Spacer(),
-                    
-                    // Seletor de Time Visual
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white24),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(_timeAtual == 1 ? Icons.shield : Icons.shield_outlined, color: Colors.white, size: 28),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
+                  ),
+                ],
+              ),
+            ),
+
+            // --- LISTA DE JOGADORES ---
+            Expanded(
+              child: FutureBuilder<List<Usuario>>(
+                future: _future,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                  final jogadores = snapshot.data ?? [];
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: jogadores.length,
+                    itemBuilder: (context, index) {
+                      final u = jogadores[index];
+                      final timeSel = _timePorJogador[u.codigo];
+                      final isSelected = timeSel == _timeAtual;
+                      final isOther = timeSel != null && timeSel != _timeAtual;
+
+                      return GestureDetector(
+                        onTap: isOther ? null : () => _toggleSelecionado(u.codigo),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          decoration: BoxDecoration(
+                            color: isSelected ? corAtiva.withOpacity(0.05) : Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: isSelected ? corAtiva : Colors.transparent, width: 1.5),
+                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                          ),
+                          child: Row(
                             children: [
-                              Text(
-                                "SELECIONANDO",
-                                style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 10, letterSpacing: 1),
+                              CircleAvatar(
+                                backgroundColor: isOther ? Colors.grey[200] : (isSelected ? corAtiva : Colors.grey[100]),
+                                child: Icon(Icons.person, color: isSelected ? Colors.white : Colors.grey),
                               ),
-                              Text(
-                                nomeTime.toUpperCase(),
-                                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(u.nome, style: TextStyle(fontWeight: FontWeight.bold, color: isOther ? Colors.grey : Colors.black87)),
+                                    if(isOther) Text("Time Adversário", style: TextStyle(fontSize: 10, color: Colors.grey[500])),
+                                  ],
+                                ),
                               ),
+                              if (isSelected) Icon(Icons.check_circle, color: corAtiva),
                             ],
                           ),
-                          const SizedBox(width: 12),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
-                            child: Text(
-                              "${_contarJogadores(_timeAtual)} JOGADORES",
-                              style: TextStyle(color: corTime, fontWeight: FontWeight.bold, fontSize: 12),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                  ],
-                ),
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
             ),
-          ),
-
-          // --- LISTA DE JOGADORES ---
-          Expanded(
-            child: FutureBuilder<List<Usuario>>(
-              future: _future,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-                if (snapshot.hasError) return const Center(child: Text("Erro ao carregar jogadores"));
-                
-                final jogadores = snapshot.data ?? [];
-                if (jogadores.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.person_off_rounded, size: 60, color: Colors.grey.shade300),
-                        const SizedBox(height: 16),
-                        const Text("Nenhum jogador cadastrado neste racha", style: TextStyle(color: Colors.grey)),
-                      ],
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 100), // Espaço para o botão flutuante
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: jogadores.length,
-                  itemBuilder: (context, index) {
-                    final usuario = jogadores[index];
-                    final timeSelecionado = _timePorJogador[usuario.codigo];
-                    final isNoTimeAtual = timeSelecionado == _timeAtual;
-                    final isEmOutroTime = timeSelecionado != null && timeSelecionado != _timeAtual;
-
-                    return GestureDetector(
-                      onTap: isEmOutroTime ? null : () => _toggleSelecionado(usuario.codigo),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: isNoTimeAtual ? corTime.withOpacity(0.1) : Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isNoTimeAtual ? corTime : Colors.transparent,
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 5,
-                              offset: const Offset(0, 3),
-                            )
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: isEmOutroTime 
-                                  ? Colors.grey.shade300 
-                                  : (isNoTimeAtual ? corTime : Colors.grey.shade200),
-                              child: Icon(Icons.person, color: isNoTimeAtual ? Colors.white : Colors.grey),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    usuario.nome,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color: isEmOutroTime ? Colors.grey : Colors.black87,
-                                    ),
-                                  ),
-                                  if (isEmOutroTime)
-                                    Text(
-                                      "Já está no outro time",
-                                      style: TextStyle(fontSize: 12, color: Colors.orange.shade700),
-                                    ),
-                                  if (usuario.apelido != null && !isEmOutroTime)
-                                    Text(
-                                      usuario.apelido!,
-                                      style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-                                    ),
-                                ],
-                              ),
-                            ),
-                            if (isNoTimeAtual)
-                              Icon(Icons.check_circle, color: corTime),
-                            if (!isNoTimeAtual && !isEmOutroTime)
-                              Icon(Icons.circle_outlined, color: Colors.grey.shade300),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
-
-      // --- BOTÃO DE AÇÃO FLUTUANTE (FAB) ---
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: SizedBox(
           width: double.infinity,
           height: 56,
           child: ElevatedButton(
             onPressed: _timeAtual == 1 ? _trocarTime : _cadastrarPartida,
             style: ElevatedButton.styleFrom(
-              backgroundColor: corTime,
-              foregroundColor: Colors.white,
-              elevation: 4,
+              backgroundColor: corAtiva,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              elevation: 8,
+              shadowColor: corAtiva.withOpacity(0.5),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  _timeAtual == 1 ? "PRÓXIMO: TIME 2" : "FINALIZAR E JOGAR",
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 1),
-                ),
-                const SizedBox(width: 8),
-                Icon(_timeAtual == 1 ? Icons.arrow_forward : Icons.sports_soccer),
-              ],
+            child: Text(
+              _timeAtual == 1 ? "PRÓXIMO: TIME VERDE" : "INICIAR PARTIDA",
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1),
             ),
           ),
         ),
