@@ -15,7 +15,7 @@ class UsuarioService {
 
     if (response.statusCode == 200) {
       final jsonBody = jsonDecode(response.body) as Map<String, dynamic>;
-      return Usuario.fromJson(jsonBody);
+      return Usuario.fromJson(jsonBody); //
     } else {
       final errorBody = jsonDecode(response.body);
       final message = errorBody['message'] ?? 'Erro desconhecido';
@@ -31,7 +31,7 @@ class UsuarioService {
 
     if (response.statusCode == 200) {
       final jsonBody = jsonDecode(response.body);
-      return Usuario.fromJson(jsonBody);
+      return Usuario.fromJson(jsonBody); //
     } else {
       final errorBody = jsonDecode(response.body);
       final message = errorBody['message'] ?? 'Erro desconhecido';
@@ -44,7 +44,7 @@ class UsuarioService {
 
     if (response.statusCode == 200) {
       final jsonBody = jsonDecode(response.body) as Map<String, dynamic>;
-      return Usuario.fromJson(jsonBody);
+      return Usuario.fromJson(jsonBody); //
     } else {
       final errorBody = jsonDecode(response.body);
       final message = errorBody['message'] ?? 'Erro desconhecido';
@@ -60,7 +60,7 @@ class UsuarioService {
 
     if (response.statusCode == 200) {
       final jsonBody = jsonDecode(response.body);
-      return RachaUsuario.fromJson(jsonBody);
+      return RachaUsuario.fromJson(jsonBody); //
     } else {
       final errorBody = jsonDecode(response.body);
       final message = errorBody['message'] ?? 'Erro desconhecido';
@@ -76,10 +76,26 @@ class UsuarioService {
 
     if (response.statusCode == 200) {
       final jsonBody = jsonDecode(response.body);
-      return UsuarioVincular.fromJson(jsonBody);
+      return UsuarioVincular.fromJson(jsonBody); //
     } else {
       final errorBody = jsonDecode(response.body);
       final message = errorBody['message'] ?? 'Erro desconhecido';
+      throw Exception(message);
+    }
+  }
+
+  // --- Método Adicionado ---
+  Future<void> recuperarSenha(String email) async {
+    final response = await _client.post(
+      "/usuario/recuperarSenha",
+      body: {"email": email},
+    );
+
+    if (response.statusCode == 200) {
+      return;
+    } else {
+      final errorBody = jsonDecode(response.body);
+      final message = errorBody['message'] ?? 'Erro ao enviar e-mail de recuperação';
       throw Exception(message);
     }
   }

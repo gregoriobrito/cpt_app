@@ -7,6 +7,8 @@ import 'dart:math' as math;
 import 'core/api_client.dart';
 import 'features/home/home_page.dart';
 import 'features/usuario/usuario_cadastro_page.dart';
+// --- Import Adicionado ---
+import 'features/usuario/usuario_esqueceu_senha_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,13 +23,18 @@ class MyApp extends StatelessWidget {
       title: 'Controlar Pontos',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: Brightness.light, // MUDANÇA: Light Mode
-        scaffoldBackgroundColor: const Color(0xFFF5F7FA), // Branco Gelo
+        brightness: Brightness.light, 
+        scaffoldBackgroundColor: const Color(0xFFF5F7FA), 
         primaryColor: const Color(0xFF2979FF),
         useMaterial3: true,
         fontFamily: 'Roboto',
       ),
+      // Mantivemos sua home original
       home: const LoginPage(),
+      // --- Rota Adicionada ---
+      routes: {
+        '/esqueceu_senha': (context) => const UsuarioEsqueceuSenhaPage(),
+      },
     );
   }
 }
@@ -45,10 +52,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   final _loginController = TextEditingController(); 
   final _senhaController = TextEditingController();
 
-  // Cores Light Theme
-  final Color _primaryBlue = const Color(0xFF2979FF); // Azul Elétrico
-  final Color _darkText = const Color(0xFF1E2230); // Quase Preto
-  final Color _cyanAccent = const Color(0xFF00E5FF); // Detalhe Neon
+  final Color _primaryBlue = const Color(0xFF2979FF); 
+  final Color _darkText = const Color(0xFF1E2230); 
+  final Color _cyanAccent = const Color(0xFF00E5FF); 
 
   late AnimationController _lightsController;
   late AnimationController _entryController;
@@ -63,7 +69,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    // StatusBar Escura para fundo claro
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark, 
@@ -126,10 +131,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA), // Fundo Claro
+      backgroundColor: const Color(0xFFF5F7FA), 
       body: Stack(
         children: [
-          // Fundo Animado (Cores suaves pastel para não ofuscar o branco)
           AnimatedBuilder(
             animation: _lightsController,
             builder: (context, child) {
@@ -138,17 +142,17 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   Positioned(
                     top: -50,
                     right: -50,
-                    child: _buildLightBlob(const Color(0xFFE3F2FD), 300), // Azul bem claro
+                    child: _buildLightBlob(const Color(0xFFE3F2FD), 300), 
                   ),
                   Positioned(
                     top: size.height * 0.4,
                     left: -50,
-                    child: _buildLightBlob(const Color(0xFFE1F5FE), 350), // Ciano bem claro
+                    child: _buildLightBlob(const Color(0xFFE1F5FE), 350), 
                   ),
                   Positioned(
                     bottom: -50,
                     right: -20,
-                    child: _buildLightBlob(const Color(0xFFEDE7F6), 400), // Roxo bem claro
+                    child: _buildLightBlob(const Color(0xFFEDE7F6), 400), 
                   ),
                 ],
               );
@@ -164,7 +168,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     _buildHeader(),
                     const SizedBox(height: 40),
                     
-                    // Card Branco Limpo
                     FadeTransition(
                       opacity: _fadeAnim,
                       child: SlideTransition(
@@ -208,7 +211,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 Align(
                                   alignment: Alignment.centerRight,
                                   child: TextButton(
-                                    onPressed: () {},
+                                    // --- Navegação Adicionada ---
+                                    onPressed: () {
+                                      Navigator.pushNamed(context, '/esqueceu_senha');
+                                    },
                                     child: Text(
                                       "Esqueceu a senha?",
                                       style: TextStyle(color: _primaryBlue, fontWeight: FontWeight.w600),
@@ -298,7 +304,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 
-  // Card Branco Moderno (Neumorphism Clean)
   Widget _buildCleanCard({required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(32),
@@ -307,7 +312,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: _primaryBlue.withOpacity(0.1), // Sombra azulada sutil
+            color: _primaryBlue.withOpacity(0.1), 
             blurRadius: 30,
             offset: const Offset(0, 15),
           ),
@@ -317,7 +322,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 
-  // Input para fundo Branco
   Widget _buildLightInput({
     required TextEditingController controller,
     required String label,
@@ -328,7 +332,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F7FA), // Fundo cinza bem claro
+        color: const Color(0xFFF5F7FA), 
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.transparent),
       ),
@@ -373,7 +377,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         height: 56,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          // Gradiente Azul Vibrante
           gradient: LinearGradient(
             colors: [_primaryBlue, const Color(0xFF00B0FF)],
             begin: Alignment.topLeft,

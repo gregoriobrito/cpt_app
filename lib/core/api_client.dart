@@ -8,7 +8,7 @@ class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
   factory ApiClient() => _instance;
 
-  final String baseUrl = 'https://trihydric-freeman-ungesticular.ngrok-free.dev';
+  final String baseUrl = 'https://cpt-web.nonprod.cloud.aptare.com.br';
 
   String? _token;
 
