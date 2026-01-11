@@ -95,8 +95,9 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
               
               _buildModalItem(Icons.history_rounded, Colors.orange, "Histórico de Partidas", () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(codigoRacha: r.codigo)));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(racha: r)));
               }),
+              if (r.flagUsuarioAdmin == "S")
               _buildModalItem(Icons.group_add_rounded, Colors.green, "Gerenciar Integrantes", () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => UsuarioListaPage(codigoRacha: r.codigo)));

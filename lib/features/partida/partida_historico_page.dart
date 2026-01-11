@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:cpv_app/features/racha/racha_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -7,8 +8,8 @@ import 'package:cpv_app/features/partida/partida_service.dart';
 import 'package:cpv_app/features/partida/vw_partida_model.dart';
 
 class PartidaHistoricoPage extends StatefulWidget {
-  final int codigoRacha;
-  const PartidaHistoricoPage({super.key, required this.codigoRacha});
+  final Racha racha;
+  const PartidaHistoricoPage({super.key, required this.racha});
 
   @override
   State<PartidaHistoricoPage> createState() => _PartidaHistoricoPageState();
@@ -26,10 +27,15 @@ class _PartidaHistoricoPageState extends State<PartidaHistoricoPage> {
   void initState() {
     super.initState();
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(statusBarColor: Colors.transparent, statusBarIconBrightness: Brightness.dark));
-    _future = _service.listarPartidasV2(widget.codigoRacha);
+    _future = _service.listarPartidasV2(widget.racha.codigo);
   }
 
-  void _recarregar() => setState(() => _future = _service.listarPartidasV2(widget.codigoRacha));
+void _recarregar() {
+    setState(() {
+      _future = _service.listarPartidasV2(widget.racha.codigo);
+    });
+  }
+  //void _recarregar() => setState(() => _future = _service.listarPartidasV2(widget.racha.codigo));
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +111,7 @@ class _PartidaHistoricoPageState extends State<PartidaHistoricoPage> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: () => _mostrarOpcoes(p),
+          onTap: widget.racha.flagUsuarioAdmin == "S" ? () => _mostrarOpcoes(p) : null,
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Row(

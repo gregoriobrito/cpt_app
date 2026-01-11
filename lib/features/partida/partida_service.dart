@@ -23,7 +23,7 @@ class PartidaService {
     }
   }
 
-  Future<Partida> burcar(int codigo) async {
+  Future<Partida> buscar(int codigo) async {
     final response = await _client.get('/partida/$codigo');
 
     if (response.statusCode == 200) {
