@@ -1,6 +1,8 @@
 import 'package:cpv_app/features/partida/partida_historico_page.dart';
 import 'package:cpv_app/features/partida/partida_racha_page.dart';
 import 'package:cpv_app/features/partida/partida_usuario_page.dart';
+import 'package:cpv_app/features/racha/racha_model.dart';
+import 'package:cpv_app/features/racha/racha_service.dart';
 import 'package:flutter/material.dart';
 import 'package:cpv_app/features/partida/partida_model.dart';
 import 'package:cpv_app/features/partida/partida_ponto_time_detalhe_model.dart';
@@ -29,7 +31,7 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
   @override
   void initState() {
     super.initState();
-    _future = _service.burcar(widget.idPartida);
+    _future = _service.buscar(widget.idPartida);
   }
 
   void _initPontuacoesIfNeeded(Partida partida) {
@@ -61,9 +63,10 @@ class _PartidaPlacaPageState extends State<PartidaPlacaPage> {
     }
   }
 
-  void _voltarTela(BuildContext context) {
+  void _voltarTela(BuildContext context) async {
     if (widget.pageBack == 1) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(codigoRacha: _partida!.codigoRacha!)));
+      Racha racha = await RachaService().get(_partida!.codigoRacha!);
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(racha: racha)));
     } else if (widget.pageBack == 2) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => PartidaUsuarioPage(codigoRacha: _partida!.codigoRacha!)));
     }

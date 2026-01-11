@@ -1,4 +1,5 @@
 import 'package:cpv_app/features/partida/partida_historico_page.dart';
+import 'package:cpv_app/features/racha/racha_model.dart';
 import 'package:cpv_app/features/racha/racha_service.dart';
 import 'package:cpv_app/features/usuario/usuario_model.dart';
 import 'package:cpv_app/features/usuario/usuario_service.dart';
@@ -162,9 +163,10 @@ class _UsuarioListaPageState extends State<UsuarioListaPage> {
                   ),
                   title: const Text('Histórico do Jogador', style: TextStyle(fontWeight: FontWeight.bold)),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
-                  onTap: () {
+                  onTap: () async { 
                     Navigator.pop(context);
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(codigoRacha: r.codigo)));
+                    Racha racha = await RachaService().get(r.codigo);
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(racha: racha)));
                   },
                 ),
                 ListTile(

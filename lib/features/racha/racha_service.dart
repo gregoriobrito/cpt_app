@@ -8,7 +8,7 @@ class RachaService {
   final ApiClient _client = ApiClient();
 
   Future<List<Racha>> listarRacha() async {
-    final response = await _client.get('/racha');
+    final response = await _client.get('/racha/v2');
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonList = jsonDecode(response.body);
@@ -33,5 +33,18 @@ class RachaService {
     }
 
     throw Exception('Erro ao listar rachas: ${response.statusCode}');
+  }
+
+  Future<Racha> get(int idRacha) async {
+    final response = await _client.get('/racha/$idRacha');
+
+    if (response.statusCode == 200) {
+      final jsonBody = jsonDecode(response.body);
+      return Racha.fromJson(jsonBody);
+    } else {
+      throw Exception(
+        "Erro ao buscar partida: ${response.statusCode} | ${response.body}",
+      );
+    }
   }
 }
