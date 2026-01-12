@@ -248,7 +248,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 subtitle: "Placares e partidas passadas",
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(codigoRacha: r.codigo)));
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(racha: r)));
                 }
               ),
               _buildModalOption(

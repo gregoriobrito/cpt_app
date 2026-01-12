@@ -324,7 +324,7 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
         ),
         title: Text(racha.nome, style: const TextStyle(fontWeight: FontWeight.bold)),
         trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade400),
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(codigoRacha: racha.codigo))),
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(racha: racha))),
       ),
     );
   }
