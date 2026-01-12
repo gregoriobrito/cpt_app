@@ -13,9 +13,15 @@ class UsuarioVincularPage extends StatefulWidget {
   State<UsuarioVincularPage> createState() => _UsuarioVincularPageState();
 }
 
-class _UsuarioVincularPageState extends State<UsuarioVincularPage> {
+class _UsuarioVincularPageState extends State<UsuarioVincularPage> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _loginController = TextEditingController();
+  
+  // Controladores de Animação
+  late AnimationController _animController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
   bool _loading = false;
 
   // --- DESIGN SYSTEM ---
@@ -30,11 +36,24 @@ class _UsuarioVincularPageState extends State<UsuarioVincularPage> {
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
     ));
+
+    // Configuração da animação de entrada
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+
+    _fadeAnimation = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
+
+    _animController.forward();
   }
 
   @override
   void dispose() {
     _loginController.dispose();
+    _animController.dispose();
     super.dispose();
   }
 
@@ -44,32 +63,61 @@ class _UsuarioVincularPageState extends State<UsuarioVincularPage> {
       builder: (_) {
         return AlertDialog(
           backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('Encontramos!', style: TextStyle(fontWeight: FontWeight.bold)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
+          elevation: 10,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Row(
             children: [
               Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.green.shade50, shape: BoxShape.circle),
+                child: Icon(Icons.check_circle_rounded, color: Colors.green.shade600, size: 28),
+              ),
+              const SizedBox(width: 12),
+              const Text('Encontramos!', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("Este é o jogador que você procura?", style: TextStyle(color: Colors.grey)),
+              const SizedBox(height: 20),
+              
+              // Card do Jogador Encontrado
+              Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(16)),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F7FA),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
                 child: Row(
                   children: [
-                    const CircleAvatar(
-                      backgroundColor: Colors.green,
-                      child: Icon(Icons.check, color: Colors.white),
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: _primaryBlue.withOpacity(0.1),
+                      child: Text(
+                        elemento.nome[0].toUpperCase(),
+                        style: TextStyle(color: _primaryBlue, fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(elemento.nome, style: const TextStyle(fontWeight: FontWeight.bold)),
-                          // CORREÇÃO: Usamos o controller já que o objeto Usuario não retorna o login na busca
                           Text(
-                            "Login: ${_loginController.text.toUpperCase()}", 
+                            elemento.nome,
+                            style: TextStyle(fontWeight: FontWeight.bold, color: _darkText, fontSize: 16),
+                          ),
+                          const SizedBox(height: 4),
+                          // CORREÇÃO: Uso correto do login que agora existe no model
+                          Text(
+                            "Login: ${elemento.login.toUpperCase()}", 
                             style: TextStyle(fontSize: 12, color: Colors.grey.shade600)
                           ),
-                          if (elemento.apelido.isNotEmpty)
+                          // CORREÇÃO: Verificação de nulo no apelido
+                          if (elemento.apelido != null && elemento.apelido!.isNotEmpty)
                              Text(
                                "Apelido: ${elemento.apelido}", 
                                style: TextStyle(fontSize: 12, color: Colors.grey.shade600)
@@ -80,20 +128,21 @@ class _UsuarioVincularPageState extends State<UsuarioVincularPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
-              const Text("Deseja vincular este atleta ao seu racha?"),
             ],
           ),
+          actionsPadding: const EdgeInsets.all(16),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('CANCELAR', style: TextStyle(color: Colors.grey)),
+              child: Text('CANCELAR', style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.bold)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: _primaryBlue,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               onPressed: () async {
                 Navigator.pop(context);
@@ -112,7 +161,7 @@ class _UsuarioVincularPageState extends State<UsuarioVincularPage> {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red));
                 }
               },
-              child: const Text('VINCULAR AGORA'),
+              child: const Text('CONFIRMAR VÍNCULO'),
             ),
           ],
         );
@@ -127,14 +176,20 @@ class _UsuarioVincularPageState extends State<UsuarioVincularPage> {
 
     try {
       final login = _loginController.text.trim();
-      // A busca retorna um objeto Usuario (sem o campo login explícito no retorno, mas temos o nome/apelido)
       Usuario usuario = await UsuarioService().buscarLogin(widget.codigoRacha, login);
       
       if (!mounted) return;
       _confirmarVinculo(usuario);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Usuário não encontrado'), backgroundColor: Colors.redAccent));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(children: [Icon(Icons.error_outline, color: Colors.white), SizedBox(width: 10), Text('Usuário não encontrado')]),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        )
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -156,81 +211,94 @@ class _UsuarioVincularPageState extends State<UsuarioVincularPage> {
             onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => UsuarioListaPage(codigoRacha: widget.codigoRacha))),
           ),
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Buscar Jogador",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  "Digite o login do usuário para encontrá-lo.",
-                  style: TextStyle(color: Colors.grey.shade500),
-                ),
-                const SizedBox(height: 30),
-
-                // --- INPUT MODERNO ---
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [BoxShadow(color: _primaryBlue.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 5))],
-                  ),
-                  child: TextFormField(
-                    controller: _loginController,
-                    style: TextStyle(color: _darkText, fontWeight: FontWeight.w600),
-                    cursorColor: _primaryBlue,
-                    decoration: InputDecoration(
-                      labelText: 'Login do usuário',
-                      labelStyle: TextStyle(color: Colors.grey.shade500),
-                      prefixIcon: Icon(Icons.search_rounded, color: _primaryBlue),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: _primaryBlue, width: 1.5)),
-                      fillColor: Colors.white,
-                      filled: true,
+        body: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Buscar Jogador",
+                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: _darkText),
                     ),
-                    textInputAction: TextInputAction.search,
-                    onFieldSubmitted: (_) => _buscarUsuario(),
-                    validator: (v) => v == null || v.isEmpty ? 'Informe o login' : null,
-                  ),
-                ),
-
-                const SizedBox(height: 30),
-
-                // --- BOTÃO GRADIENTE ---
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: _loading ? null : _buscarUsuario,
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 10,
-                      shadowColor: _primaryBlue.withOpacity(0.4),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Digite o login do usuário para encontrá-lo e adicioná-lo ao racha.",
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 15),
                     ),
-                    child: Ink(
+                    const SizedBox(height: 40),
+
+                    // --- INPUT MODERNO ---
+                    Container(
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [_primaryBlue, const Color(0xFF00B0FF)]),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
+                        boxShadow: [BoxShadow(color: _primaryBlue.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10))],
                       ),
-                      child: Container(
-                        alignment: Alignment.center,
-                        child: _loading
-                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                            : const Text('PROCURAR', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 1.2)),
+                      child: TextFormField(
+                        controller: _loginController,
+                        style: TextStyle(color: _darkText, fontWeight: FontWeight.w600, fontSize: 16),
+                        cursorColor: _primaryBlue,
+                        decoration: InputDecoration(
+                          labelText: 'Login do usuário',
+                          labelStyle: TextStyle(color: Colors.grey.shade400),
+                          prefixIcon: Icon(Icons.search_rounded, color: _primaryBlue),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.transparent)),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: _primaryBlue, width: 2)),
+                          fillColor: Colors.white,
+                          filled: true,
+                        ),
+                        textInputAction: TextInputAction.search,
+                        onFieldSubmitted: (_) => _buscarUsuario(),
+                        validator: (v) => v == null || v.isEmpty ? 'Informe o login' : null,
                       ),
                     ),
-                  ),
+
+                    const SizedBox(height: 30),
+
+                    // --- BOTÃO GRADIENTE ---
+                    SizedBox(
+                      width: double.infinity,
+                      height: 60,
+                      child: ElevatedButton(
+                        onPressed: _loading ? null : _buscarUsuario,
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          elevation: 8,
+                          shadowColor: _primaryBlue.withOpacity(0.4),
+                        ),
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(colors: [_primaryBlue, const Color(0xFF00B0FF)]),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Container(
+                            alignment: Alignment.center,
+                            child: _loading
+                                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.search, color: Colors.white),
+                                      SizedBox(width: 8),
+                                      Text('PROCURAR', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 1.2)),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
