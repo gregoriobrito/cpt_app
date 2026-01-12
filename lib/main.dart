@@ -1,13 +1,13 @@
 import 'dart:ui';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+// Certifique-se de ter adicionado 'animated_text_kit' no pubspec.yaml
 import 'package:animated_text_kit/animated_text_kit.dart';
-import 'dart:math' as math;
-
-import 'core/api_client.dart';
-import 'features/home/home_page.dart';
-import 'features/usuario/usuario_cadastro_page.dart';
-import 'features/usuario/usuario_esqueceu_senha_page.dart';
+import 'package:cpv_app/core/api_client.dart';
+import 'package:cpv_app/features/home/home_page.dart';
+import 'package:cpv_app/features/usuario/usuario_cadastro_page.dart';
+// import 'package:cpv_app/features/usuario/usuario_esqueceu_senha_page.dart'; // Descomente se criou esta página
 
 void main() {
   runApp(const MyApp());
@@ -23,15 +23,12 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.light, 
-        scaffoldBackgroundColor: const Color(0xFFF5F7FA), 
-        primaryColor: const Color(0xFF2979FF),
+        scaffoldBackgroundColor: const Color(0xFFF5F7FA), // Fundo Gelo
+        primaryColor: const Color(0xFF2979FF), // Azul Principal
         useMaterial3: true,
         fontFamily: 'Roboto',
       ),
       home: const LoginPage(),
-      routes: {
-        '/esqueceu_senha': (context) => const UsuarioEsqueceuSenhaPage(),
-      },
     );
   }
 }
@@ -49,9 +46,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   final _loginController = TextEditingController(); 
   final _senhaController = TextEditingController();
 
+  // Cores do Tema
   final Color _primaryBlue = const Color(0xFF2979FF); 
   final Color _darkText = const Color(0xFF1E2230); 
 
+  // Controladores de Animação
   late AnimationController _lightsController;
   late AnimationController _entryController;
   late Animation<double> _fadeAnim;
@@ -65,21 +64,24 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
+    // Deixa a barra de status transparente (Imersão)
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark, 
     ));
 
-    _lightsController = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat(); 
+    // Animação das Luzes de Fundo
+    _lightsController = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat(reverse: true);
+    
+    // Animação de Entrada do Card
     _entryController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
-
     _fadeAnim = CurvedAnimation(parent: _entryController, curve: Curves.easeOut);
     _slideAnim = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
       CurvedAnimation(parent: _entryController, curve: Curves.easeOutCubic),
     );
-
     _entryController.forward();
 
+    // Animação do Ícone Pulando
     _bouncingIconController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))..repeat(reverse: true);
   }
 
@@ -103,8 +105,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
     try {
       await ApiClient().login(username: loginInput, password: senhaInput);
+      
       if (!mounted) return;
       
+      // Navegação Suave para a Home
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (_, __, ___) => const HomePage(),
@@ -130,30 +134,30 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       backgroundColor: const Color(0xFFF5F7FA), 
       body: Stack(
         children: [
+          // --- FUNDO ANIMADO COM LUZES ---
           AnimatedBuilder(
             animation: _lightsController,
             builder: (context, child) {
               return Stack(
                 children: [
                   Positioned(
-                    top: -50,
-                    right: -50,
+                    top: -50, right: -50,
                     child: _buildLightBlob(const Color(0xFFE3F2FD), 300), 
                   ),
                   Positioned(
-                    top: size.height * 0.4,
-                    left: -50,
+                    top: size.height * 0.4, left: -50,
                     child: _buildLightBlob(const Color(0xFFE1F5FE), 350), 
                   ),
                   Positioned(
-                    bottom: -50,
-                    right: -20,
+                    bottom: -50, right: -20,
                     child: _buildLightBlob(const Color(0xFFEDE7F6), 400), 
                   ),
                 ],
               );
             },
           ),
+
+          // --- CONTEÚDO ---
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -161,9 +165,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // LOGO E TÍTULOS
                     _buildHeader(),
+                    
                     const SizedBox(height: 40),
                     
+                    // CARD DE LOGIN
                     FadeTransition(
                       opacity: _fadeAnim,
                       child: SlideTransition(
@@ -175,27 +182,24 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               children: [
                                 Text(
                                   "Bem-vindo de volta",
-                                  style: TextStyle(
-                                    color: _darkText,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: TextStyle(color: _darkText, fontSize: 24, fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
                                   "Acesse para gerenciar seus jogos",
-                                  style: TextStyle(
-                                    color: Colors.grey.shade600,
-                                    fontSize: 14,
-                                  ),
+                                  style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
                                 ),
                                 const SizedBox(height: 30),
+                                
+                                // INPUT USUÁRIO
                                 _buildLightInput(
                                   controller: _loginController,
                                   label: 'Usuário',
                                   icon: Icons.person_outline_rounded,
                                 ),
                                 const SizedBox(height: 20),
+                                
+                                // INPUT SENHA
                                 _buildLightInput(
                                   controller: _senhaController,
                                   label: 'Senha',
@@ -204,11 +208,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   obscureText: _obscurePassword,
                                   onToggleVisibility: () => setState(() => _obscurePassword = !_obscurePassword),
                                 ),
+                                
+                                // ESQUECEU SENHA
                                 Align(
                                   alignment: Alignment.centerRight,
                                   child: TextButton(
                                     onPressed: () {
-                                      Navigator.pushNamed(context, '/esqueceu_senha');
+                                      // Se tiver a rota, descomente:
+                                      // Navigator.pushNamed(context, '/esqueceu_senha');
                                     },
                                     child: Text(
                                       "Esqueceu a senha?",
@@ -217,6 +224,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   ),
                                 ),
                                 const SizedBox(height: 20),
+                                
+                                // BOTÃO ENTRAR
                                 _buildGradientButton(),
                               ],
                             ),
@@ -224,7 +233,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
+                    
                     const SizedBox(height: 40),
+                    
+                    // RODAPÉ CRIAR CONTA
                     _buildFooter(),
                   ],
                 ),
@@ -236,9 +248,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 
+  // --- WIDGETS AUXILIARES ---
+
   Widget _buildHeader() {
     return Column(
       children: [
+        // Ícone Animado
         AnimatedBuilder(
           animation: _bouncingIconController,
           builder: (context, child) {
@@ -282,26 +297,25 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           ),
         ),
         
-        // SLOGAN: Cada ponto conta!
+        // SLOGAN: CADA PONTO CONTA!
         SizedBox(
-          height: 25,
+          height: 30,
           child: AnimatedTextKit(
             animatedTexts: [
               TypewriterAnimatedText(
                 'Cada ponto conta!',
                 speed: const Duration(milliseconds: 80),
-                cursor: '_', // Cursor diferente para diferenciar
+                cursor: '_',
                 textStyle: TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w500, // Peso médio
-                  color: Colors.grey.shade600, // Cor mais suave
-                  letterSpacing: 1.0,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey.shade600,
+                  letterSpacing: 1.2,
                   fontFamily: 'Roboto',
                 ),
               ),
             ],
-            // Pequena pausa inicial para o título começar primeiro
-            pause: const Duration(milliseconds: 500), 
+            pause: const Duration(milliseconds: 1200), // Espera o título terminar
             isRepeatingAnimation: false,
           ),
         ),
@@ -428,13 +442,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UsuarioCadastroPage())),
           child: Text(
             'Criar Conta',
-            style: TextStyle(
-              color: _primaryBlue,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: _primaryBlue, fontWeight: FontWeight.bold),
           ),
         ),
       ],
     );
   }
-}
+} 
