@@ -1,8 +1,10 @@
+import 'dart:convert'; // Necessário para salvar a lista de objetos
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cpv_app/core/api_client.dart';
 import 'package:cpv_app/features/partida/partida_historico_page.dart';
 import 'package:cpv_app/features/partida/partida_racha_page.dart';
@@ -27,8 +29,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late Future<Usuario> _usuarioFuture;
   late Future<List<Racha>> _meusRachasFuture;
   
-  // Lista de Atalhos Fixados
-  final List<Racha> _atalhosFixados = [];
+  // Lista de atalhos (inicia vazia, mas será preenchida pelo SharedPreferences)
+  List<Racha> _atalhosFixados = [];
 
   // Caminho da foto de perfil
   String? _profileImagePath;
@@ -49,12 +51,51 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     ));
 
     _usuarioFuture = UsuarioService().buscar();
-    // Você pode carregar todos ou filtrar aqui
-    _meusRachasFuture = RachaService().listarRacha(); 
+    _meusRachasFuture = RachaService().listarRacha();
+    
+    // Carrega dados persistidos (Foto e Atalhos)
+    _carregarDadosLocais();
 
     _lightsController = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat(reverse: true);
     _entranceController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000))..forward();
   }
+
+  // --- PERSISTÊNCIA DE DADOS ---
+
+  Future<void> _carregarDadosLocais() async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    // 1. Carregar Foto
+    setState(() {
+      _profileImagePath = prefs.getString('profile_image_path');
+    });
+
+    // 2. Carregar Atalhos
+    final atalhosString = prefs.getStringList('atalhos_fixados');
+    if (atalhosString != null) {
+      setState(() {
+        _atalhosFixados = atalhosString
+            .map((item) => Racha.fromJson(jsonDecode(item)))
+            .toList();
+      });
+    }
+  }
+
+  Future<void> _salvarAtalhos() async {
+    final prefs = await SharedPreferences.getInstance();
+    // Converte a lista de objetos Racha para uma lista de Strings JSON
+    final List<String> atalhosString = _atalhosFixados
+        .map((racha) => jsonEncode({
+              'codigo': racha.codigo,
+              'nome': racha.nome
+              // Adicione outros campos do Racha se necessário no fromJson do model
+            }))
+        .toList();
+    
+    await prefs.setStringList('atalhos_fixados', atalhosString);
+  }
+
+  // -----------------------------
 
   @override
   void dispose() {
@@ -74,7 +115,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
-  // --- 1. MODAL PARA ADICIONAR ATALHO ---
+  // --- MODAL: ADICIONAR ATALHO ---
   void _mostrarSelecaoDeAtalho() {
     showModalBottomSheet(
       context: context,
@@ -114,7 +155,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       separatorBuilder: (_,__) => const Divider(height: 1),
                       itemBuilder: (context, index) {
                         final racha = lista[index];
-                        // Verifica se já está adicionado
                         final jaAdicionado = _atalhosFixados.any((r) => r.codigo == racha.codigo);
 
                         return ListTile(
@@ -129,16 +169,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               ? const Text("Adicionado", style: TextStyle(color: Colors.green, fontSize: 12))
                               : const Icon(Icons.add_circle_outline, color: Colors.grey),
                           onTap: () {
-                            if (!jaAdicionado) {
-                              setState(() {
+                            setState(() {
+                              if (!jaAdicionado) {
                                 _atalhosFixados.add(racha);
-                              });
-                              Navigator.pop(context); // Fecha após adicionar
-                            } else {
-                              setState(() {
+                              } else {
                                 _atalhosFixados.removeWhere((r) => r.codigo == racha.codigo);
-                              });
-                            }
+                              }
+                            });
+                            _salvarAtalhos(); // Salva no disco após modificar
+                            if (!jaAdicionado) Navigator.pop(context); // Fecha se adicionou
                           },
                         );
                       },
@@ -153,7 +192,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // --- 2. MODAL DE OPÇÕES (Ao clicar no atalho) ---
+  // --- MODAL: OPÇÕES DO ATALHO ---
   void _mostrarOpcoesRachaAtalho(Racha r) {
     showModalBottomSheet(
       context: context,
@@ -187,13 +226,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ],
                     ),
                   ),
-                  // Opção para remover atalho
                   IconButton(
                     icon: const Icon(Icons.close, color: Colors.grey),
                     onPressed: () {
                       setState(() {
                         _atalhosFixados.removeWhere((element) => element.codigo == r.codigo);
                       });
+                      _salvarAtalhos(); // Atualiza persistência ao remover
                       Navigator.pop(context);
                     },
                     tooltip: "Remover atalho",
@@ -278,22 +317,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) return const SizedBox(height: 80);
                       final usuario = snapshot.data!;
-                      final nomeDisplay = usuario.apelido ?? usuario.nome.split(' ')[0];
+                      final nomeDisplay = (usuario.apelido != null && usuario.apelido!.isNotEmpty) 
+                          ? usuario.apelido! 
+                          : usuario.nome.split(' ')[0];
 
                       return GestureDetector(
                         onTap: () async {
-                          final novoPath = await Navigator.push(
+                          // Navega para o perfil e espera
+                          await Navigator.push(
                             context, 
                             MaterialPageRoute(builder: (_) => UsuarioPerfilPage(usuario: usuario))
                           );
-                          if (novoPath != null && novoPath is String) {
-                            setState(() {
-                              _profileImagePath = novoPath;
-                              _usuarioFuture = UsuarioService().buscar();
-                            });
-                          } else {
-                            setState(() { _usuarioFuture = UsuarioService().buscar(); });
-                          }
+                          // Ao voltar, força recarregar TUDO (foto e dados)
+                          _carregarDadosLocais();
+                          setState(() { _usuarioFuture = UsuarioService().buscar(); });
                         },
                         child: Container(
                           padding: const EdgeInsets.all(16),
@@ -304,6 +341,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                           child: Row(
                             children: [
+                              // Avatar
                               Container(
                                 height: 60, width: 60,
                                 decoration: BoxDecoration(
@@ -380,7 +418,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
                   const SizedBox(height: 30),
 
-                  // --- MENU PRINCIPAL ---
+                  // --- MENU PRINCIPAL (Vertical) ---
                   _buildMenuCard(0, "Meus Rachas", "Gerencie seus grupos", Icons.groups_rounded, const Color(0xFF2979FF), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RachaPage()))),
                   _buildMenuCard(1, "Nova Partida", "Iniciar jogo agora", Icons.sports_volleyball_rounded, const Color(0xFF00B0FF), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PartidaRachaPage()))),
                   _buildMenuCard(2, "Estatísticas", "Seu desempenho", Icons.bar_chart_rounded, const Color(0xFFFF6D00), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RelatorioRachaPage()))),
@@ -401,17 +439,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // Widget do Botão "Adicionar Atalho"
+  // --- WIDGETS AUXILIARES ---
+
   Widget _buildAddShortcutButton() {
     return GestureDetector(
       onTap: _mostrarSelecaoDeAtalho,
       child: Container(
         width: 110,
-        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: _primaryBlue.withOpacity(0.3), width: 1, style: BorderStyle.solid), // Borda pontilhada simulada
+          border: Border.all(color: _primaryBlue.withOpacity(0.3), width: 1, style: BorderStyle.solid),
           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Column(
@@ -419,25 +457,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           children: [
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                shape: BoxShape.circle
-              ),
+              decoration: BoxDecoration(color: Colors.grey.shade50, shape: BoxShape.circle),
               child: Icon(Icons.add, color: _primaryBlue, size: 24),
             ),
             const SizedBox(height: 10),
-            Text(
-              "Adicionar",
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _primaryBlue),
-              textAlign: TextAlign.center,
-            ),
+            Text("Adicionar", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _primaryBlue)),
           ],
         ),
       ),
     );
   }
 
-  // Widget do Card de Atalho Fixado
   Widget _buildRachaShortcut(Racha racha) {
     return GestureDetector(
       onTap: () => _mostrarOpcoesRachaAtalho(racha),
