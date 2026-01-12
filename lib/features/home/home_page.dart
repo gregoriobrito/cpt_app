@@ -83,12 +83,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Future<void> _salvarAtalhos() async {
     final prefs = await SharedPreferences.getInstance();
-    // Converte a lista de objetos Racha para uma lista de Strings JSON
     final List<String> atalhosString = _atalhosFixados
         .map((racha) => jsonEncode({
               'codigo': racha.codigo,
-              'nome': racha.nome
-              // Adicione outros campos do Racha se necessário no fromJson do model
+              'nome': racha.nome,
+              'flagUsuarioAdmin': racha.flagUsuarioAdmin
             }))
         .toList();
     
@@ -251,6 +250,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(racha: r)));
                 }
               ),
+              if (r.flagUsuarioAdmin == "S")
               _buildModalOption(
                 icon: Icons.groups, 
                 color: Colors.green, 
