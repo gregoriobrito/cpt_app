@@ -9,7 +9,7 @@ import 'package:cpv_app/features/partida/vw_partida_model.dart';
 
 class PartidaHistoricoPage extends StatefulWidget {
   final Racha racha;
-  const PartidaHistoricoPage({super.key, required this.racha, required int codigoRacha});
+  const PartidaHistoricoPage({super.key, required this.racha});
 
   @override
   State<PartidaHistoricoPage> createState() => _PartidaHistoricoPageState();
