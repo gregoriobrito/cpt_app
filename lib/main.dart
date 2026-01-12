@@ -7,7 +7,6 @@ import 'dart:math' as math;
 import 'core/api_client.dart';
 import 'features/home/home_page.dart';
 import 'features/usuario/usuario_cadastro_page.dart';
-// --- Import Adicionado ---
 import 'features/usuario/usuario_esqueceu_senha_page.dart';
 
 void main() {
@@ -20,7 +19,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Controlar Pontos',
+      title: 'Ponto a Ponto',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.light, 
@@ -29,9 +28,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Roboto',
       ),
-      // Mantivemos sua home original
       home: const LoginPage(),
-      // --- Rota Adicionada ---
       routes: {
         '/esqueceu_senha': (context) => const UsuarioEsqueceuSenhaPage(),
       },
@@ -54,7 +51,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   final Color _primaryBlue = const Color(0xFF2979FF); 
   final Color _darkText = const Color(0xFF1E2230); 
-  final Color _cyanAccent = const Color(0xFF00E5FF); 
 
   late AnimationController _lightsController;
   late AnimationController _entryController;
@@ -211,7 +207,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 Align(
                                   alignment: Alignment.centerRight,
                                   child: TextButton(
-                                    // --- Navegação Adicionada ---
                                     onPressed: () {
                                       Navigator.pushNamed(context, '/esqueceu_senha');
                                     },
@@ -264,12 +259,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           },
         ),
         const SizedBox(height: 20),
+        
+        // TÍTULO: PONTO A PONTO
         SizedBox(
           height: 35,
           child: AnimatedTextKit(
             animatedTexts: [
               TypewriterAnimatedText(
-                'CONTROLAR PONTOS',
+                'PONTO A PONTO',
                 speed: const Duration(milliseconds: 100),
                 cursor: '|',
                 textStyle: TextStyle(
@@ -281,6 +278,30 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 ),
               ),
             ],
+            isRepeatingAnimation: false,
+          ),
+        ),
+        
+        // SLOGAN: Cada ponto conta!
+        SizedBox(
+          height: 25,
+          child: AnimatedTextKit(
+            animatedTexts: [
+              TypewriterAnimatedText(
+                'Cada ponto conta!',
+                speed: const Duration(milliseconds: 80),
+                cursor: '_', // Cursor diferente para diferenciar
+                textStyle: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500, // Peso médio
+                  color: Colors.grey.shade600, // Cor mais suave
+                  letterSpacing: 1.0,
+                  fontFamily: 'Roboto',
+                ),
+              ),
+            ],
+            // Pequena pausa inicial para o título começar primeiro
+            pause: const Duration(milliseconds: 500), 
             isRepeatingAnimation: false,
           ),
         ),
