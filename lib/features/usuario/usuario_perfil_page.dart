@@ -2,11 +2,13 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Importante para salvar
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cpv_app/features/racha/racha_model.dart';
 import 'package:cpv_app/features/racha/racha_service.dart';
 import 'package:cpv_app/features/usuario/usuario_model.dart';
 import 'package:cpv_app/features/partida/partida_historico_page.dart';
+// Importação da nova página de alterar senha
+import 'package:cpv_app/features/usuario/usuario_alterar_senha_page.dart'; 
 
 class UsuarioPerfilPage extends StatefulWidget {
   final Usuario usuario;
@@ -68,7 +70,9 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
         await _salvarFoto(pickedFile.path); // Salva no disco
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Erro: $e")));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Erro: $e")));
+      }
     }
   }
 
@@ -79,7 +83,7 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
 
   void _toggleEdit() {
     if (_isEditing) {
-      // Simulação de salvamento
+      // Simulação de salvamento (aqui você chamaria o serviço de atualizar perfil se tiver)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Perfil atualizado com sucesso!"), backgroundColor: Colors.green),
       );
@@ -184,11 +188,11 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
                   
                   const SizedBox(height: 30),
 
-                  // --- 2. ESTATÍSTICAS RÁPIDAS (NOVO) ---
+                  // --- 2. ESTATÍSTICAS RÁPIDAS ---
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildStatItem("Partidas", "42"),
+                      _buildStatItem("Partidas", "42"), // Valores mockados por enquanto
                       Container(width: 1, height: 40, color: Colors.grey.shade300),
                       _buildStatItem("Vitórias", "28"),
                       Container(width: 1, height: 40, color: Colors.grey.shade300),
@@ -244,7 +248,7 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
 
                   const SizedBox(height: 30),
 
-                  // --- 5. CONFIGURAÇÕES (NOVO) ---
+                  // --- 5. CONFIGURAÇÕES ---
                   Align(alignment: Alignment.centerLeft, child: Text("Conta", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _darkText))),
                   const SizedBox(height: 12),
                   Container(
@@ -255,7 +259,13 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
                           leading: const Icon(Icons.lock_outline, color: Colors.grey),
                           title: const Text("Alterar Senha", style: TextStyle(fontWeight: FontWeight.w600)),
                           trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
-                          onTap: () {},
+                          // AQUI ESTÁ A VINCULAÇÃO
+                          onTap: () {
+                             Navigator.push(
+                               context, 
+                               MaterialPageRoute(builder: (context) => const UsuarioAlterarSenhaPage())
+                             );
+                          },
                         ),
                         const Divider(height: 1),
                         ListTile(
