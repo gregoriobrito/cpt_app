@@ -1,6 +1,7 @@
 import 'dart:convert'; // Necessário para salvar a lista de objetos
 import 'dart:io';
 import 'dart:ui';
+import 'package:cpv_app/features/partida/partida_usuario_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
@@ -240,6 +241,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
               const SizedBox(height: 24),
               const Divider(),
+              _buildModalOption(
+                icon: Icons.add, 
+                color: Colors.blue, 
+                title: "Nova Partida", 
+                subtitle: "Toque para jogar",
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaUsuarioPage(codigoRacha: r.codigo)));
+                }
+              ),
               _buildModalOption(
                 icon: Icons.history, 
                 color: Colors.orange, 
