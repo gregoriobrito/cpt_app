@@ -45,7 +45,7 @@ class RachaService {
 
   Future<void> cadastrar(String nome) async {
     final response = await _client.post(
-      '/racha/cadastrar', 
+      '/racha', 
       body: {
         "nome": nome,
       },
