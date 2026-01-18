@@ -17,7 +17,7 @@ import 'package:cpv_app/features/usuario/usuario_lista_page.dart';
 import 'package:cpv_app/features/usuario/usuario_model.dart';
 import 'package:cpv_app/features/usuario/usuario_perfil_page.dart';
 import 'package:cpv_app/features/usuario/usuario_service.dart';
-import 'package:cpv_app/main.dart';
+import 'package:cpv_app/main.dart'; // Ajuste conforme o local da sua LoginPage
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -28,7 +28,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late Future<Usuario> _usuarioFuture;
-  late Future<List<Racha>> _meusRachasFuture;
   
   // Lista de atalhos (inicia vazia, mas será preenchida pelo SharedPreferences)
   List<Racha> _atalhosFixados = [];
@@ -52,7 +51,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     ));
 
     _usuarioFuture = UsuarioService().buscar();
-    _meusRachasFuture = RachaService().listarRacha();
     
     // Carrega dados persistidos (Foto e Atalhos)
     _carregarDadosLocais();
@@ -107,6 +105,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void _logout(BuildContext context) async {
     await ApiClient().logout();
     if(mounted) {
+      // Ajuste para sua rota de Login correta
       Navigator.pushAndRemoveUntil(
         context, 
         MaterialPageRoute(builder: (_) => const LoginPage()), 
@@ -192,11 +191,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // --- MODAL: OPÇÕES DO ATALHO ---
+  // --- MODAL: OPÇÕES DO ATALHO (ATUALIZADO) ---
   void _mostrarOpcoesRachaAtalho(Racha r) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true, // 1. PERMITE QUE O MODAL CRESÇA CONFORME O CONTEÚDO
       builder: (_) => Container(
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -204,77 +204,130 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
         padding: const EdgeInsets.fromLTRB(24, 10, 24, 24),
         child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: _primaryBlue.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                    child: Icon(Icons.star, color: _primaryBlue),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Racha Selecionado", style: TextStyle(color: Colors.grey.shade500, fontSize: 12, fontWeight: FontWeight.bold)),
-                        Text(r.nome, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _darkText)),
-                      ],
+          child: SingleChildScrollView( // 2. PERMITE ROLAGEM SE A TELA FOR PEQUENA
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: _primaryBlue.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                      child: Icon(Icons.star, color: _primaryBlue),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.grey),
-                    onPressed: () {
-                      setState(() {
-                        _atalhosFixados.removeWhere((element) => element.codigo == r.codigo);
-                      });
-                      _salvarAtalhos(); // Atualiza persistência ao remover
-                      Navigator.pop(context);
-                    },
-                    tooltip: "Remover atalho",
-                  )
-                ],
-              ),
-              const SizedBox(height: 24),
-              const Divider(),
-              _buildModalOption(
-                icon: Icons.add, 
-                color: Colors.blue, 
-                title: "Nova Partida", 
-                subtitle: "Toque para jogar",
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaUsuarioPage(codigoRacha: r.codigo)));
-                }
-              ),
-              _buildModalOption(
-                icon: Icons.history, 
-                color: Colors.orange, 
-                title: "Ver Histórico", 
-                subtitle: "Placares e partidas passadas",
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(racha: r)));
-                }
-              ),
-              if (r.flagUsuarioAdmin == "S")
-              _buildModalOption(
-                icon: Icons.groups, 
-                color: Colors.green, 
-                title: "Ver Integrantes", 
-                subtitle: "Lista de jogadores deste racha",
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => UsuarioListaPage(codigoRacha: r.codigo)));
-                }
-              ),
-            ],
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Racha Selecionado", style: TextStyle(color: Colors.grey.shade500, fontSize: 12, fontWeight: FontWeight.bold)),
+                          Text(r.nome, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _darkText)),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.grey),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      tooltip: "Fechar",
+                    )
+                  ],
+                ),
+                const SizedBox(height: 24),
+                const Divider(),
+                
+                // Opções Padrão
+                _buildModalOption(
+                  icon: Icons.add, 
+                  color: Colors.blue, 
+                  title: "Nova Partida", 
+                  subtitle: "Toque para jogar",
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaUsuarioPage(codigoRacha: r.codigo)));
+                  }
+                ),
+                _buildModalOption(
+                  icon: Icons.history, 
+                  color: Colors.orange, 
+                  title: "Ver Histórico", 
+                  subtitle: "Placares e partidas passadas",
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(racha: r)));
+                  }
+                ),
+                if (r.flagUsuarioAdmin == "S")
+                _buildModalOption(
+                  icon: Icons.groups, 
+                  color: Colors.green, 
+                  title: "Ver Integrantes", 
+                  subtitle: "Lista de jogadores deste racha",
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => UsuarioListaPage(codigoRacha: r.codigo)));
+                  }
+                ),
+  
+                const SizedBox(height: 10), 
+                
+                // Opção de Remover
+                _buildModalOption(
+                  icon: Icons.delete_outline_rounded, 
+                  color: Colors.red, 
+                  title: "Retirar do Acesso Rápido", 
+                  subtitle: "Remover da tela inicial",
+                  onTap: () {
+                    Navigator.pop(context);
+                    _confirmarRemocaoAtalho(r);
+                  }
+                ),
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  // --- ALTERAÇÃO 3: POP-UP DE CONFIRMAÇÃO ---
+  void _confirmarRemocaoAtalho(Racha r) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Retirar Atalho?", style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Text("Deseja realmente retirar '${r.nome}' do seu acesso rápido?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx), // Fecha o dialog e não faz nada
+            child: const Text("CANCELAR", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              // Ação de remover
+              setState(() {
+                _atalhosFixados.removeWhere((element) => element.codigo == r.codigo);
+              });
+              _salvarAtalhos(); // Salva a alteração
+              
+              Navigator.pop(ctx); // Fecha o Dialog
+              
+              // Feedback visual
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Atalho removido."), backgroundColor: Colors.redAccent, duration: Duration(seconds: 2)),
+              );
+            },
+            child: const Text("RETIRAR", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }
