@@ -190,6 +190,7 @@ class _PartidaUsuarioPageState extends State<PartidaUsuarioPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(u.nome, style: TextStyle(fontWeight: FontWeight.bold, color: isOther ? Colors.grey : Colors.black87)),
+                                    Text(u.apelido!, style: TextStyle(fontWeight: FontWeight.normal, fontSize: 12, color: isOther ? Colors.grey : Colors.grey.shade500)),
                                     if(isOther) Text("Time Adversário", style: TextStyle(fontSize: 10, color: Colors.grey[500])),
                                   ],
                                 ),
