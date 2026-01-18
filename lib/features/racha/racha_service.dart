@@ -67,7 +67,7 @@ class RachaService {
   Future<void> deletar(int codigoRacha) async {
     final response = await _client.delete('/racha/$codigoRacha');
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 204) {
       return;
     } else {
       try {
