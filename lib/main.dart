@@ -7,6 +7,7 @@ import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:cpv_app/core/api_client.dart';
 import 'package:cpv_app/features/home/home_page.dart';
 import 'package:cpv_app/features/usuario/usuario_cadastro_page.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 // import 'package:cpv_app/features/usuario/usuario_esqueceu_senha_page.dart'; // Descomente se criou esta página
 
 void main() {
@@ -63,6 +64,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    
+    _logarTokenValido();
 
     // Deixa a barra de status transparente (Imersão)
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -83,6 +86,26 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
     // Animação do Ícone Pulando
     _bouncingIconController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))..repeat(reverse: true);
+  }
+
+  void _logarTokenValido() async {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    final apiClient = ApiClient();
+    await apiClient.init();
+
+    if (apiClient.token != null && apiClient.token!.isNotEmpty) {
+      if (!JwtDecoder.isExpired(apiClient.token!)) {
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => const HomePage(),
+            transitionsBuilder: (_, a, __, c) =>
+                FadeTransition(opacity: a, child: c),
+            transitionDuration: const Duration(milliseconds: 800),
+          ),
+        );
+      }
+    }
   }
 
   @override
