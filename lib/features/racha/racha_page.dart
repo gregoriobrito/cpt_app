@@ -1,3 +1,4 @@
+import 'package:cpv_app/features/home/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cpv_app/features/partida/partida_historico_page.dart';
@@ -321,7 +322,7 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            onTap: () => _mostrarOpcoesRacha(r),
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => HomePage(racha: r,))),//codigoRacha: r.codigo))),
                             borderRadius: BorderRadius.circular(24),
                             child: Padding(
                               padding: const EdgeInsets.all(20),

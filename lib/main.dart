@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'dart:math' as math;
+import 'package:cpv_app/features/racha/racha_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 // Certifique-se de ter adicionado 'animated_text_kit' no pubspec.yaml
@@ -98,7 +99,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       if (!JwtDecoder.isExpired(apiClient.token!)) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const HomePage(),
+            pageBuilder: (_, __, ___) => const RachaPage(),
             transitionsBuilder: (_, a, __, c) =>
                 FadeTransition(opacity: a, child: c),
             transitionDuration: const Duration(milliseconds: 800),
@@ -134,7 +135,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       // Navegação Suave para a Home
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const HomePage(),
+          pageBuilder: (_, __, ___) => const RachaPage(),
           transitionsBuilder: (_, a, __, c) => FadeTransition(opacity: a, child: c),
           transitionDuration: const Duration(milliseconds: 800),
         ),
