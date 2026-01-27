@@ -1,3 +1,4 @@
+import 'package:cpv_app/features/racha/racha_model.dart';
 import 'package:cpv_app/features/usuario/usuario_lista_page.dart';
 import 'package:cpv_app/features/usuario/usuario_model.dart';
 import 'package:cpv_app/features/usuario/usuario_service.dart';
@@ -6,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class UsuarioVincularPage extends StatefulWidget {
-  final int codigoRacha;
-  const UsuarioVincularPage({super.key, required this.codigoRacha});
+  final Racha racha;
+  const UsuarioVincularPage({super.key, required this.racha});
 
   @override
   State<UsuarioVincularPage> createState() => _UsuarioVincularPageState();
@@ -149,13 +150,13 @@ class _UsuarioVincularPageState extends State<UsuarioVincularPage> with SingleTi
                 try {
                   UsuarioVincular vincular = UsuarioVincular(
                     codigoUsuario: elemento.codigo,
-                    codigoRacha: widget.codigoRacha,
+                    codigoRacha: widget.racha.codigo,
                   );
                   await UsuarioService().vincular(vincular);
 
                   if(!mounted) return;
                   
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => UsuarioListaPage(codigoRacha: widget.codigoRacha)));
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => UsuarioListaPage(racha: widget.racha)));
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Atleta vinculado com sucesso!'), backgroundColor: Colors.green));
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red));
@@ -176,7 +177,7 @@ class _UsuarioVincularPageState extends State<UsuarioVincularPage> with SingleTi
 
     try {
       final login = _loginController.text.trim();
-      Usuario usuario = await UsuarioService().buscarLogin(widget.codigoRacha, login);
+      Usuario usuario = await UsuarioService().buscarLogin(widget.racha.codigo, login);
       
       if (!mounted) return;
       _confirmarVinculo(usuario);
@@ -208,7 +209,7 @@ class _UsuarioVincularPageState extends State<UsuarioVincularPage> with SingleTi
           elevation: 0,
           leading: IconButton(
             icon: Icon(Icons.arrow_back_ios_new, color: _darkText),
-            onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => UsuarioListaPage(codigoRacha: widget.codigoRacha))),
+            onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => UsuarioListaPage(racha: widget.racha))),
           ),
         ),
         body: FadeTransition(

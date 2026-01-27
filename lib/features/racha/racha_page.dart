@@ -239,7 +239,7 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
               _buildModalItem(Icons.login_rounded, _primaryBlue, "Acessar Painel", () { Navigator.pop(context); _navegarParaHome(r); }),
               _buildModalItem(Icons.history, Colors.orange, "Histórico de Partidas", () { Navigator.pop(context); Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(racha: r))); }),
               if (r.flagUsuarioAdmin == "S") ...[
-                _buildModalItem(Icons.group, Colors.green, "Gerenciar Integrantes", () { Navigator.pop(context); Navigator.push(context, MaterialPageRoute(builder: (_) => UsuarioListaPage(codigoRacha: r.codigo))); }),
+                _buildModalItem(Icons.group, Colors.green, "Gerenciar Integrantes", () { Navigator.pop(context); Navigator.push(context, MaterialPageRoute(builder: (_) => UsuarioListaPage(racha: r))); }),
                 _buildModalItem(Icons.delete_outline, Colors.red, "Excluir Grupo", () { Navigator.pop(context); _confirmarExclusao(r); }),
               ]
             ],

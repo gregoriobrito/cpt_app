@@ -9,8 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class UsuarioListaPage extends StatefulWidget {
-  final int codigoRacha;
-  const UsuarioListaPage({super.key, required this.codigoRacha});
+  final Racha racha;
+  const UsuarioListaPage({super.key, required this.racha});
 
   @override
   State<UsuarioListaPage> createState() => _UsuarioListaPageState();
@@ -32,12 +32,12 @@ class _UsuarioListaPageState extends State<UsuarioListaPage> {
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
     ));
-    _future = _service.listarUsuario(widget.codigoRacha);
+    _future = _service.listarUsuario(widget.racha.codigo);
   }
 
   void _recarregar() {
     setState(() {
-      _future = _service.listarUsuario(widget.codigoRacha);
+      _future = _service.listarUsuario(widget.racha.codigo);
     });
   }
 
@@ -95,7 +95,7 @@ class _UsuarioListaPageState extends State<UsuarioListaPage> {
                 try {
                   UsuarioVincular vincular = UsuarioVincular(
                     codigoUsuario: elemento.codigo,
-                    codigoRacha: widget.codigoRacha,
+                    codigoRacha: widget.racha.codigo,
                   );
                   await UsuarioService().desvincular(vincular);
                   if(!mounted) return;
@@ -204,6 +204,7 @@ class _UsuarioListaPageState extends State<UsuarioListaPage> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
+          if (widget.racha.flagUsuarioAdmin == "S")
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: IconButton(
@@ -214,7 +215,7 @@ class _UsuarioListaPageState extends State<UsuarioListaPage> {
               ),
               tooltip: 'Vincular jogador',
               onPressed: () {
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => UsuarioVincularPage(codigoRacha: widget.codigoRacha)));
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => UsuarioVincularPage(racha: widget.racha)));
               },
             ),
           ),
@@ -266,7 +267,7 @@ class _UsuarioListaPageState extends State<UsuarioListaPage> {
                   subtitle: u.apelido != null && u.apelido!.isNotEmpty 
                       ? Text(u.apelido!, style: TextStyle(color: Colors.grey.shade500)) 
                       : null,
-                  trailing: IconButton(
+                  trailing: widget.racha.flagUsuarioAdmin == "N" ? null : IconButton(
                     icon: Icon(Icons.more_horiz_rounded, color: Colors.grey.shade400),
                     onPressed: () => _mostrarOpcoesRacha(u),
                   ),

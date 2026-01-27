@@ -336,7 +336,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         subtitle: "Gerenciar time",
                         icon: Icons.groups_rounded,
                         color: const Color(0xFF00C853),
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => UsuarioListaPage(codigoRacha: widget.racha.codigo))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => UsuarioListaPage(racha: widget.racha))),
                       ),
 
                       // Card 4: Estatísticas
