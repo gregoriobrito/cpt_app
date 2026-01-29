@@ -7,8 +7,6 @@ import 'package:cpv_app/features/racha/racha_model.dart';
 import 'package:cpv_app/features/racha/racha_service.dart';
 import 'package:cpv_app/features/usuario/usuario_model.dart';
 import 'package:cpv_app/features/partida/partida_historico_page.dart';
-// Importação da nova página de alterar senha
-import 'package:cpv_app/features/usuario/usuario_alterar_senha_page.dart'; 
 
 class UsuarioPerfilPage extends StatefulWidget {
   final Usuario usuario;
@@ -40,11 +38,17 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
     _apelidoController = TextEditingController(text: widget.usuario.apelido ?? "");
     _loginController = TextEditingController(text: widget.usuario.login);
     
-    _rachasFuture = RachaService().listarRacha();
-    _carregarFotoSalva(); // Carrega a foto ao abrir
+    _carregarRachas();
+    _carregarFotoSalva();
   }
 
-  // --- LÓGICA DE PERSISTÊNCIA DA FOTO ---
+  void _carregarRachas() {
+    setState(() {
+      _rachasFuture = RachaService().listarRacha();
+    });
+  }
+
+  // --- LÓGICA DE FOTO ---
   Future<void> _carregarFotoSalva() async {
     final prefs = await SharedPreferences.getInstance();
     final path = prefs.getString('profile_image_path');
@@ -67,23 +71,130 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
         setState(() {
           _imageFile = File(pickedFile.path);
         });
-        await _salvarFoto(pickedFile.path); // Salva no disco
+        await _salvarFoto(pickedFile.path);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Erro: $e")));
+    }
+  }
+
+  // --- LÓGICA DE SAIR DO RACHA ---
+  Future<void> _sairDoRacha(Racha r) async {
+    try {
+      // AQUI: Chama o serviço para desvincular o usuário do racha.
+      // Se o método no seu service for 'deletar' ou 'sair', ajuste o nome abaixo.
+      // Exemplo: await RachaService().sair(r.codigo); 
+      // Vou usar deletar como exemplo, mas o ideal é ter um endpoint específico de "sair" no backend.
+      await RachaService().deletar(r.codigo); 
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Você saiu do grupo."), backgroundColor: Colors.grey));
+        _carregarRachas(); // Atualiza a lista
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Erro: $e")));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Erro ao sair: $e"), backgroundColor: Colors.red));
       }
     }
   }
 
+  void _confirmarSaida(Racha r) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Sair do Racha?", style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Text("Deseja realmente sair do grupo '${r.nome}'?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("CANCELAR", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            onPressed: () {
+              Navigator.pop(ctx);
+              _sairDoRacha(r);
+            },
+            child: const Text("SAIR", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _mostrarOpcoesRacha(Racha r) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.only(bottom: 30),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 10),
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 20),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(color: _primaryBlue.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                      child: Icon(Icons.groups, color: _primaryBlue),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(r.nome, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _darkText)),
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 20),
+              const Divider(height: 1),
+              
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.history_edu_rounded, color: Colors.orange)),
+                title: const Text("Ver Histórico", style: TextStyle(fontWeight: FontWeight.w600)),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(racha: r)));
+                },
+              ),
+              
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.exit_to_app_rounded, color: Colors.red)),
+                title: const Text("Sair do Racha", style: TextStyle(fontWeight: FontWeight.w600, color: Colors.red)),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmarSaida(r);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _voltar() {
-    // Retorna true para indicar que pode ter havido mudança
     Navigator.pop(context, true);
   }
 
   void _toggleEdit() {
     if (_isEditing) {
-      // Simulação de salvamento (aqui você chamaria o serviço de atualizar perfil se tiver)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Perfil atualizado com sucesso!"), backgroundColor: Colors.green),
       );
@@ -127,7 +238,6 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
         ),
         body: Stack(
           children: [
-            // Fundo Decorativo
             Positioned(
               top: -100, left: -50,
               child: Container(
@@ -144,7 +254,6 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
               padding: const EdgeInsets.fromLTRB(24, 110, 24, 24),
               child: Column(
                 children: [
-                  // --- 1. FOTO DE PERFIL ---
                   Center(
                     child: Stack(
                       children: [
@@ -188,11 +297,11 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
                   
                   const SizedBox(height: 30),
 
-                  // --- 2. ESTATÍSTICAS RÁPIDAS ---
+                  // ESTATÍSTICAS RÁPIDAS
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildStatItem("Partidas", "42"), // Valores mockados por enquanto
+                      _buildStatItem("Partidas", "42"),
                       Container(width: 1, height: 40, color: Colors.grey.shade300),
                       _buildStatItem("Vitórias", "28"),
                       Container(width: 1, height: 40, color: Colors.grey.shade300),
@@ -202,7 +311,7 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
 
                   const SizedBox(height: 30),
 
-                  // --- 3. DADOS PESSOAIS ---
+                  // DADOS PESSOAIS
                   Align(alignment: Alignment.centerLeft, child: Text("Informações Pessoais", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _darkText))),
                   const SizedBox(height: 12),
                   Container(
@@ -225,8 +334,8 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
 
                   const SizedBox(height: 30),
 
-                  // --- 4. RACHAS VINCULADOS ---
-                  Align(alignment: Alignment.centerLeft, child: Text("Meus Rachas", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _darkText))),
+                  // RACHAS VINCULADOS
+                  Align(alignment: Alignment.centerLeft, child: Text("Meus Rachas Vinculados", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _darkText))),
                   const SizedBox(height: 12),
                   FutureBuilder<List<Racha>>(
                     future: _rachasFuture,
@@ -248,7 +357,7 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
 
                   const SizedBox(height: 30),
 
-                  // --- 5. CONFIGURAÇÕES ---
+                  // CONFIGURAÇÕES
                   Align(alignment: Alignment.centerLeft, child: Text("Conta", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _darkText))),
                   const SizedBox(height: 12),
                   Container(
@@ -259,13 +368,7 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
                           leading: const Icon(Icons.lock_outline, color: Colors.grey),
                           title: const Text("Alterar Senha", style: TextStyle(fontWeight: FontWeight.w600)),
                           trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
-                          // AQUI ESTÁ A VINCULAÇÃO
-                          onTap: () {
-                             Navigator.push(
-                               context, 
-                               MaterialPageRoute(builder: (context) => const UsuarioAlterarSenhaPage())
-                             );
-                          },
+                          onTap: () {},
                         ),
                         const Divider(height: 1),
                         ListTile(
@@ -333,8 +436,10 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
           child: Icon(Icons.groups, color: _primaryBlue),
         ),
         title: Text(racha.nome, style: const TextStyle(fontWeight: FontWeight.bold)),
-        trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade400),
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(racha: racha))),
+        // Ícone de "Mais opções" ou seta para indicar que abre algo
+        trailing: Icon(Icons.more_horiz_rounded, size: 24, color: Colors.grey.shade400),
+        // Agora abre o menu de opções (Histórico ou Sair)
+        onTap: () => _mostrarOpcoesRacha(racha),
       ),
     );
   }

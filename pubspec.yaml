@@ -65,6 +65,10 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # "assets" deve estar alinhado com "uses-material-design" (2 espaços da margem)
+  assets:
+    # O traço deve ter 2 espaços a mais que "assets" (4 espaços da margem)
+    - assets/images/logoapp.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

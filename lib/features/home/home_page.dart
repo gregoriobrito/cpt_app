@@ -7,6 +7,7 @@ import 'package:cpv_app/core/api_client.dart';
 import 'package:cpv_app/features/partida/partida_historico_page.dart';
 import 'package:cpv_app/features/partida/partida_usuario_page.dart';
 import 'package:cpv_app/features/racha/racha_model.dart';
+import 'package:cpv_app/features/racha/racha_service.dart'; // Import necessário para sair/excluir
 import 'package:cpv_app/features/relatorio/relatorio_estatistica_page.dart';
 import 'package:cpv_app/features/usuario/usuario_lista_page.dart';
 import 'package:cpv_app/features/usuario/usuario_model.dart';
@@ -77,6 +78,105 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         (r) => false
       );
     }
+  }
+
+  // --- AÇÕES DE SAIR / EXCLUIR RACHA ---
+
+  void _confirmarAcaoRacha(bool isAdmin) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(isAdmin ? "Desfazer Racha?" : "Sair do Racha?", style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(isAdmin 
+            ? "Tem certeza que deseja EXCLUIR este racha permanentemente? Todo o histórico será perdido." 
+            : "Tem certeza que deseja SAIR deste racha? Você precisará ser adicionado novamente para voltar."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("CANCELAR", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            onPressed: () async {
+              Navigator.pop(ctx); // Fecha Dialog
+              try {
+                // Chama o serviço de deletar (funciona tanto para sair quanto excluir dependendo da regra de negócio do backend, 
+                // ou se precisar de endpoints diferentes, ajuste aqui)
+                await RachaService().deletar(widget.racha.codigo);
+                
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isAdmin ? "Racha excluído com sucesso." : "Você saiu do racha.")));
+                  Navigator.pop(context); // Volta para a tela de seleção de rachas
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Erro: $e"), backgroundColor: Colors.red));
+                }
+              }
+            },
+            child: Text(isAdmin ? "DESFAZER" : "SAIR", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _mostrarOpcoesGerenciamentoRacha() {
+    final bool isAdmin = widget.racha.flagUsuarioAdmin == "S";
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.only(bottom: 30),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 10),
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 20),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  isAdmin ? "Gerenciar Racha (Admin)" : "Opções do Racha",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _darkText),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                  child: Icon(isAdmin ? Icons.delete_forever_rounded : Icons.exit_to_app_rounded, color: Colors.red),
+                ),
+                title: Text(
+                  isAdmin ? "Desfazer Racha" : "Sair do Racha",
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+                ),
+                subtitle: Text(
+                  isAdmin ? "Excluir permanentemente" : "Deixar o grupo",
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                onTap: () {
+                  Navigator.pop(context); // Fecha bottom sheet
+                  _confirmarAcaoRacha(isAdmin); // Abre confirmação
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   // --- MENU INFERIOR DE FILTRO (Mantido) ---
@@ -215,9 +315,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // AJUSTE 1: Texto "Meu Perfil"
                                     Text("Meu Perfil", style: TextStyle(color: Colors.grey.shade500, fontSize: 12, fontWeight: FontWeight.bold)),
-                                    // AJUSTE 1: Nome do Usuário
                                     Text(
                                       nomeDisplay.toUpperCase(), 
                                       maxLines: 1, 
@@ -237,7 +335,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   
                   const SizedBox(height: 20),
                   
-                  // --- BARRA DO RACHA ATUAL E BOTÃO VOLTAR (AJUSTE 2 e 3) ---
+                  // --- BARRA DO RACHA ATUAL E BOTÕES ---
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                     decoration: BoxDecoration(
@@ -271,25 +369,45 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                         ),
                         
-                        // Botão de Trocar (Voltar)
-                        InkWell(
-                          onTap: () => Navigator.pop(context), // Volta para a RachaPage
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
+                        // Ações (Trocar e Opções)
+                        Row(
+                          children: [
+                            // Botão Trocar
+                            InkWell(
+                              onTap: () => Navigator.pop(context), // Volta para a RachaPage
                               borderRadius: BorderRadius.circular(12),
-                              boxShadow: [BoxShadow(color: _primaryBlue.withOpacity(0.1), blurRadius: 5)]
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [BoxShadow(color: _primaryBlue.withOpacity(0.1), blurRadius: 5)]
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text("Trocar", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _primaryBlue)),
+                                    const SizedBox(width: 4),
+                                    Icon(Icons.swap_horiz, size: 16, color: _primaryBlue),
+                                  ],
+                                ),
+                              ),
                             ),
-                            child: Row(
-                              children: [
-                                Text("Trocar", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _primaryBlue)),
-                                const SizedBox(width: 4),
-                                Icon(Icons.swap_horiz, size: 16, color: _primaryBlue),
-                              ],
+                            const SizedBox(width: 8),
+                            // Botão Mais Opções (Sair/Excluir) - NOVO
+                            InkWell(
+                              onTap: _mostrarOpcoesGerenciamentoRacha,
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.1), blurRadius: 5)]
+                                ),
+                                child: Icon(Icons.more_vert_rounded, size: 18, color: Colors.grey.shade700),
+                              ),
                             ),
-                          ),
+                          ],
                         )
                       ],
                     ),
