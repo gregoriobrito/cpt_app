@@ -30,12 +30,11 @@ class _PartidaHistoricoPageState extends State<PartidaHistoricoPage> {
     _future = _service.listarPartidasV2(widget.racha.codigo);
   }
 
-void _recarregar() {
+  void _recarregar() {
     setState(() {
       _future = _service.listarPartidasV2(widget.racha.codigo);
     });
   }
-  //void _recarregar() => setState(() => _future = _service.listarPartidasV2(widget.racha.codigo));
 
   @override
   Widget build(BuildContext context) {
@@ -135,28 +134,108 @@ void _recarregar() {
     );
   }
 
+  // --- CONFIRMAÇÃO DE EXCLUSÃO ---
+  void _confirmarExclusaoPartida(VwPartida p) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Excluir Partida?", style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Text("Tem certeza que deseja remover o registro desta partida?\n\n${p.identificadorTimeA} ${p.pontosTimeA} x ${p.pontosTimeB} ${p.identificadorTimeB}"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("CANCELAR", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx); // Fecha Dialog
+              await _service.excluirPartida(p.codigo);
+              if(mounted) {
+                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Partida removida."), backgroundColor: Colors.grey));
+                 _recarregar();
+              }
+            },
+            child: const Text("EXCLUIR", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _mostrarOpcoes(VwPartida p) {
     showModalBottomSheet(
       context: context, 
       backgroundColor: Colors.transparent, 
       builder: (_) => Container(
-        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-        child: SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const SizedBox(height: 10),
-          Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 20),
-          ListTile(
-            leading: const Icon(Icons.edit_rounded, color: Colors.blue), 
-            title: const Text("Corrigir Placar"), 
-            onTap: () { Navigator.pop(context); Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => PartidaPlacaPage(idPartida: p.codigo, pageBack: 1))); }
+        decoration: const BoxDecoration(
+          color: Colors.white, 
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))
+        ),
+        padding: const EdgeInsets.only(bottom: 30),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min, 
+            children: [
+              const SizedBox(height: 10),
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 20),
+              
+              // --- CABEÇALHO DO MODAL (DETALHES DA PARTIDA) ---
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  children: [
+                    Text("Gerenciar Partida", style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible(child: Text(p.identificadorTimeA, textAlign: TextAlign.right, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _darkText))),
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(color: _primaryBlue.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                          child: Text("${p.pontosTimeA} x ${p.pontosTimeB}", style: TextStyle(fontWeight: FontWeight.w900, color: _primaryBlue, fontSize: 16)),
+                        ),
+                        Flexible(child: Text(p.identificadorTimeB, textAlign: TextAlign.left, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _darkText))),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              const Divider(height: 1),
+              
+              // --- OPÇÕES ---
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.edit_rounded, color: Colors.blue)), 
+                title: const Text("Corrigir Placar", style: TextStyle(fontWeight: FontWeight.w600)),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                onTap: () { 
+                  Navigator.pop(context); 
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => PartidaPlacaPage(idPartida: p.codigo, pageBack: 1))); 
+                }
+              ),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.delete_outline_rounded, color: Colors.red)), 
+                title: const Text("Excluir Partida", style: TextStyle(fontWeight: FontWeight.w600, color: Colors.red)),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                onTap: () {
+                  Navigator.pop(context); 
+                  _confirmarExclusaoPartida(p); 
+                }
+              ),
+            ],
           ),
-          ListTile(
-            leading: const Icon(Icons.delete_outline_rounded, color: Colors.red), 
-            title: const Text("Excluir Partida"), 
-            onTap: () async { Navigator.pop(context); await _service.excluirPartida(p.codigo); _recarregar(); }
-          ),
-          const SizedBox(height: 30),
-        ]))
+        )
       )
     );
   }
