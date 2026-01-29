@@ -21,7 +21,7 @@ class RachaService {
   }
 
   Future<List<Usuario>> listarUsuario(int idRacha) async {
-    final response = await _client.get('/racha/usuario/$idRacha');
+    final response = await _client.get('/racha/usuario/v2/$idRacha');
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonList = jsonDecode(response.body);

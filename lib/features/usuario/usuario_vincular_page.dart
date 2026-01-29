@@ -185,7 +185,7 @@ class _UsuarioVincularPageState extends State<UsuarioVincularPage> with SingleTi
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(children: [Icon(Icons.error_outline, color: Colors.white), SizedBox(width: 10), Text('Usuário não encontrado')]),
+          content: Row(children: [Icon(Icons.error_outline, color: Colors.white), SizedBox(width: 10), Text(e.toString().replaceFirst('Exception: ', ''))]),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

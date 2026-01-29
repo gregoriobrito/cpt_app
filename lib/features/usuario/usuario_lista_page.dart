@@ -1,6 +1,7 @@
 import 'package:cpv_app/features/partida/partida_historico_page.dart';
 import 'package:cpv_app/features/racha/racha_model.dart';
 import 'package:cpv_app/features/racha/racha_service.dart';
+import 'package:cpv_app/features/usuario/usuario_administrador_model.dart';
 import 'package:cpv_app/features/usuario/usuario_model.dart';
 import 'package:cpv_app/features/usuario/usuario_service.dart';
 import 'package:cpv_app/features/usuario/usuario_vincular_model.dart';
@@ -114,6 +115,90 @@ class _UsuarioListaPageState extends State<UsuarioListaPage> {
     );
   }
 
+  void _confirmarAdministrador(Usuario elemento) {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: elemento.flagUsuarioAdmin == "S"
+                  ? const Text('Retirar Administrador?', style: TextStyle(fontWeight: FontWeight.bold))
+                  : const Text('Tornar Administrador?', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              elemento.flagUsuarioAdmin == "S" 
+              ? Text("Tem certeza que deseja retirar administrador deste atleta?")
+              : Text("Tem certeza que deseja tornar este atleta administrador?"),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: elemento.flagUsuarioAdmin == "S" ? Colors.orange : Colors.green,
+                      child: Icon(Icons.person_remove, color: Colors.white),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(elemento.nome, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          Text(elemento.apelido ?? "", style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('CANCELAR', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: elemento.flagUsuarioAdmin == "S" 
+              ? ElevatedButton.styleFrom(
+                backgroundColor: Colors.orangeAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              )
+              : ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () async {
+                Navigator.pop(context);
+                try {
+                  UsuarioAdministrador vincular = UsuarioAdministrador(
+                    codigoUsuario: elemento.codigo,
+                    codigoRacha: widget.racha.codigo,
+                    flagAdministrador: elemento.flagUsuarioAdmin == "S" ? "N" : "S"
+                  );
+                  await UsuarioService().tornarRetirarAdministrador(vincular);
+                  if(!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Usuário foi atualizado com sucesso!')));
+                  _recarregar();
+                } catch (e) {
+                  if(!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro: $e')));
+                }
+              },
+              child: elemento.flagUsuarioAdmin == "S" ? const Text('RETIRAR ADM') : const Text('TORNAR ADM'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _mostrarOpcoesRacha(Usuario r) {
     showModalBottomSheet(
       context: context,
@@ -158,15 +243,19 @@ class _UsuarioListaPageState extends State<UsuarioListaPage> {
                 ListTile(
                   leading: Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                    child: const Icon(Icons.history_edu, color: Colors.orange),
+                    decoration: r.flagUsuarioAdmin! == "S" 
+                                  ? BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(8))
+                                  : BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                    child: r.flagUsuarioAdmin! == "S" 
+                          ? const Icon(Icons.history_edu, color: Colors.orange)
+                          : const Icon(Icons.history_edu, color: Colors.green)
                   ),
-                  title: const Text('Histórico do Jogador', style: TextStyle(fontWeight: FontWeight.bold)),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                  title: r.flagUsuarioAdmin! == "S" 
+                        ? Text('Retirar Administrador', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)) 
+                        : Text('Tornar Administrador', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)) ,
                   onTap: () async { 
                     Navigator.pop(context);
-                    Racha racha = await RachaService().get(r.codigo);
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(racha: racha)));
+                    _confirmarAdministrador(r);
                   },
                 ),
                 ListTile(

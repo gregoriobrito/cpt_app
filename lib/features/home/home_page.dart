@@ -392,6 +392,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 ),
                               ),
                             ),
+                            /*
                             const SizedBox(width: 8),
                             // Botão Mais Opções (Sair/Excluir) - NOVO
                             InkWell(
@@ -407,6 +408,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 child: Icon(Icons.more_vert_rounded, size: 18, color: Colors.grey.shade700),
                               ),
                             ),
+                            */
                           ],
                         )
                       ],

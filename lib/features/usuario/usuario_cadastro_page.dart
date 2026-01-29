@@ -112,7 +112,7 @@ class _UsuarioCadastroPageState extends State<UsuarioCadastroPage> with TickerPr
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erro ao cadastrar: $e', style: const TextStyle(color: Colors.white)),
+          content: Text(e.toString().replaceFirst('Exception: ', ''), style: const TextStyle(color: Colors.white)),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
         ),
