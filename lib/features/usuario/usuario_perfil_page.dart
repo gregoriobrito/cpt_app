@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:cpv_app/features/usuario/usuario_alterar_senha_page.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -368,7 +369,7 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
                           leading: const Icon(Icons.lock_outline, color: Colors.grey),
                           title: const Text("Alterar Senha", style: TextStyle(fontWeight: FontWeight.w600)),
                           trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
-                          onTap: () {},
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => UsuarioAlterarSenhaPage())),
                         ),
                         const Divider(height: 1),
                         ListTile(
