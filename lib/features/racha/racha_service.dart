@@ -91,4 +91,14 @@ class RachaService {
       throw Exception("Erro ao buscar racha: ${response.statusCode}");
     }
   }
+
+  Future<void> usuarioSair(int idRacha) async {
+    final response = await _client.delete('/racha/usuarioSair/$idRacha');
+
+    if (response.statusCode == 204) {
+      return;
+    } else {
+      throw Exception("${response.statusCode}");
+    }
+  }
 }

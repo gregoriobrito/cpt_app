@@ -54,7 +54,6 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
 
   void _carregarRachas() {
     setState(() {
-      _rachasFuture = RachaService().listarRacha();
       _informacoesUsuario = RachaService().informacoesUsuario(
         widget.racha.codigo,
       );
@@ -532,47 +531,6 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
                         ),
                       ],
                     ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  // RACHAS VINCULADOS
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Meus Rachas Vinculados",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: _darkText,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  FutureBuilder<List<Racha>>(
-                    future: _rachasFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting)
-                        return const Center(child: CircularProgressIndicator());
-                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Center(
-                            child: Text("Sem rachas vinculados."),
-                          ),
-                        );
-                      }
-                      return Column(
-                        children: snapshot.data!
-                            .map((racha) => _buildRachaItem(racha))
-                            .toList(),
-                      );
-                    },
                   ),
 
                   const SizedBox(height: 30),

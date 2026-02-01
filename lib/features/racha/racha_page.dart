@@ -30,26 +30,76 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
   late PageController _pageController;
   late AnimationController _lightsController;
   final TextEditingController _nomeRachaController = TextEditingController();
-  
+
   bool _isLoading = false;
   int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ));
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
+    );
 
     _carregarLista();
 
     // Viewport 0.80 permite ver um pedaço do próximo card (efeito carrossel)
     _pageController = PageController(viewportFraction: 0.80);
-    
+
     // Animação lenta das luzes de fundo
-    _lightsController = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat(reverse: true);
+    _lightsController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 10),
+    )..repeat(reverse: true);
   }
+
+  void _sairDoRacha(Racha racha) {
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: const Text(
+        "Sair do racha?",
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+      content: Text("Você deseja sair do racha '${racha.nome}'?"),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text("CANCELAR"),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.redAccent,
+          ),
+          onPressed: () async {
+            Navigator.pop(ctx);
+
+            await _service.usuarioSair(racha.codigo);
+
+            _carregarLista();
+
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Você saiu do racha."),
+                  backgroundColor: Colors.redAccent,
+                ),
+              );
+            }
+          },
+          child: const Text(
+            "SAIR",
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   void _carregarLista() {
     setState(() {
@@ -69,10 +119,14 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
   void _navegarParaHome(Racha racha) {
     Navigator.of(context).push(
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => HomePage(racha: racha),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            HomePage(racha: racha),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           // Efeito de Fade + leve Zoom para entrada suave
-          var curve = CurvedAnimation(parent: animation, curve: Curves.easeOutQuart);
+          var curve = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutQuart,
+          );
           return FadeTransition(
             opacity: curve,
             child: ScaleTransition(
@@ -81,7 +135,9 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
             ),
           );
         },
-        transitionDuration: const Duration(milliseconds: 600), // Duração um pouco maior para fluidez
+        transitionDuration: const Duration(
+          milliseconds: 600,
+        ), // Duração um pouco maior para fluidez
       ),
     );
   }
@@ -92,7 +148,10 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text("Sair da conta?", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Sair da conta?",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: const Text("Você será desconectado do aplicativo."),
         actions: [
           TextButton(
@@ -100,9 +159,14 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
             child: const Text("CANCELAR", style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
             onPressed: () async {
-              Navigator.pop(ctx); 
+              Navigator.pop(ctx);
               await ApiClient().logout();
               if (mounted) {
                 Navigator.pushAndRemoveUntil(
@@ -112,7 +176,13 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
                 );
               }
             },
-            child: const Text("SAIR", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text(
+              "SAIR",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -123,20 +193,28 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
   Future<void> _salvarNovoRacha() async {
     final nome = _nomeRachaController.text.trim();
     if (nome.isEmpty) return;
-    
+
     FocusScope.of(context).unfocus();
     setState(() => _isLoading = true);
-    Navigator.pop(context); 
-    
+    Navigator.pop(context);
+
     try {
       await _service.cadastrar(nome);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Grupo criado com sucesso!"), backgroundColor: Colors.green));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Grupo criado com sucesso!"),
+            backgroundColor: Colors.green,
+          ),
+        );
         _nomeRachaController.clear();
         _carregarLista();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+        );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -147,11 +225,19 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
     try {
       await _service.deletar(r.codigo);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Grupo excluído."), backgroundColor: Colors.grey));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Grupo excluído."),
+            backgroundColor: Colors.grey,
+          ),
+        );
         _carregarLista();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+        );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -162,13 +248,22 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text("Excluir Grupo?", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Excluir Grupo?",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: Text("Tem certeza que deseja apagar '${r.nome}'?"),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("CANCELAR", style: TextStyle(color: Colors.grey))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("CANCELAR", style: TextStyle(color: Colors.grey)),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () { Navigator.pop(ctx); _excluirRacha(r); },
+            onPressed: () {
+              Navigator.pop(ctx);
+              _excluirRacha(r);
+            },
             child: const Text("EXCLUIR", style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -181,12 +276,21 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Row(children: [Icon(Icons.add_circle, color: _primaryBlue), const SizedBox(width: 10), const Text("Novo Racha")]),
+        title: Row(
+          children: [
+            Icon(Icons.add_circle, color: _primaryBlue),
+            const SizedBox(width: 10),
+            const Text("Novo Racha"),
+          ],
+        ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("Crie um novo grupo para gerenciar suas partidas.", style: TextStyle(fontSize: 14, color: Colors.grey)),
+              const Text(
+                "Crie um novo grupo para gerenciar suas partidas.",
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
               const SizedBox(height: 16),
               TextField(
                 controller: _nomeRachaController,
@@ -195,8 +299,14 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
                   hintText: "Nome (ex: Vôlei de Quarta)",
                   filled: true,
                   fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                 ),
               ),
             ],
@@ -204,11 +314,25 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
         ),
         actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("CANCELAR")),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("CANCELAR"),
+          ),
           ElevatedButton(
             onPressed: _salvarNovoRacha,
-            style: ElevatedButton.styleFrom(backgroundColor: _primaryBlue, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-            child: const Text("CRIAR", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _primaryBlue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              "CRIAR",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -221,27 +345,87 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) => Container(
-        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
         padding: const EdgeInsets.fromLTRB(0, 10, 0, 30),
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(r.nome, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _darkText), textAlign: TextAlign.center),
+                child: Text(
+                  r.nome,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: _darkText,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
               const SizedBox(height: 20),
               const Divider(),
               // Opção de entrar também pelo modal
-              _buildModalItem(Icons.login_rounded, _primaryBlue, "Acessar Painel", () { Navigator.pop(context); _navegarParaHome(r); }),
-              _buildModalItem(Icons.history, Colors.orange, "Histórico de Partidas", () { Navigator.pop(context); Navigator.push(context, MaterialPageRoute(builder: (_) => PartidaHistoricoPage(racha: r))); }),
+              _buildModalItem(
+                Icons.login_rounded,
+                _primaryBlue,
+                "Acessar Painel",
+                () {
+                  Navigator.pop(context);
+                  _navegarParaHome(r);
+                },
+              ),
+              _buildModalItem(
+                Icons.history,
+                Colors.orange,
+                "Histórico de Partidas",
+                () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PartidaHistoricoPage(racha: r),
+                    ),
+                  );
+                },
+              ),
               if (r.flagUsuarioAdmin == "S") ...[
-                _buildModalItem(Icons.group, Colors.green, "Gerenciar Integrantes", () { Navigator.pop(context); Navigator.push(context, MaterialPageRoute(builder: (_) => UsuarioListaPage(racha: r))); }),
-                _buildModalItem(Icons.delete_outline, Colors.red, "Excluir Grupo", () { Navigator.pop(context); _confirmarExclusao(r); }),
-              ]
+                _buildModalItem(
+                  Icons.group,
+                  Colors.green,
+                  "Gerenciar Integrantes",
+                  () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => UsuarioListaPage(racha: r),
+                      ),
+                    );
+                  },
+                ),
+                _buildModalItem(
+                  Icons.delete_outline,
+                  Colors.red,
+                  "Excluir Grupo",
+                  () {
+                    Navigator.pop(context);
+                    _confirmarExclusao(r);
+                  },
+                ),
+              ],
             ],
           ),
         ),
@@ -249,9 +433,21 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildModalItem(IconData icon, Color color, String text, VoidCallback onTap) {
+  Widget _buildModalItem(
+    IconData icon,
+    Color color,
+    String text,
+    VoidCallback onTap,
+  ) {
     return ListTile(
-      leading: Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: color)),
+      leading: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(icon, color: color),
+      ),
       title: Text(text, style: const TextStyle(fontWeight: FontWeight.w600)),
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
@@ -264,7 +460,7 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: _backgroundColor,
-      resizeToAvoidBottomInset: false, 
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           // 1. FUNDO ANIMADO
@@ -273,9 +469,21 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
             builder: (context, child) {
               return Stack(
                 children: [
-                  Positioned(top: -50, right: -50, child: _buildLightBlob(const Color(0xFFE3F2FD), 300)),
-                  Positioned(top: size.height * 0.4, left: -60, child: _buildLightBlob(const Color(0xFFE1F5FE), 350)),
-                  Positioned(bottom: -50, right: -20, child: _buildLightBlob(const Color(0xFFEDE7F6), 400)),
+                  Positioned(
+                    top: -50,
+                    right: -50,
+                    child: _buildLightBlob(const Color(0xFFE3F2FD), 300),
+                  ),
+                  Positioned(
+                    top: size.height * 0.4,
+                    left: -60,
+                    child: _buildLightBlob(const Color(0xFFE1F5FE), 350),
+                  ),
+                  Positioned(
+                    bottom: -50,
+                    right: -20,
+                    child: _buildLightBlob(const Color(0xFFEDE7F6), 400),
+                  ),
                 ],
               );
             },
@@ -293,13 +501,28 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+                        icon: const Icon(
+                          Icons.logout_rounded,
+                          color: Colors.redAccent,
+                        ),
                         onPressed: _logout,
                         tooltip: "Sair da conta",
                       ),
-                      Text("SEUS GRUPOS", style: TextStyle(color: _darkText, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.2)),
+                      Text(
+                        "SEUS GRUPOS",
+                        style: TextStyle(
+                          color: _darkText,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
                       IconButton(
-                        icon: Icon(Icons.add_circle_outline, color: _primaryBlue, size: 28),
+                        icon: Icon(
+                          Icons.add_circle_outline,
+                          color: _primaryBlue,
+                          size: 28,
+                        ),
                         onPressed: _mostrarModalCriacao,
                       ),
                     ],
@@ -307,7 +530,7 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
                 ),
 
                 const SizedBox(height: 10),
-                
+
                 // TÍTULO ANIMADO
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -315,7 +538,15 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
                     height: 50,
                     child: AnimatedTextKit(
                       animatedTexts: [
-                        TypewriterAnimatedText('Escolha o Racha', speed: const Duration(milliseconds: 100), textStyle: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: _darkText)),
+                        TypewriterAnimatedText(
+                          'Escolha o Racha',
+                          speed: const Duration(milliseconds: 100),
+                          textStyle: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: _darkText,
+                          ),
+                        ),
                       ],
                       isRepeatingAnimation: false,
                     ),
@@ -330,21 +561,37 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
                   child: FutureBuilder<List<Racha>>(
                     future: _future,
                     builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting && !_isLoading) return const Center(child: CircularProgressIndicator());
-                      
+                      if (snapshot.connectionState == ConnectionState.waiting &&
+                          !_isLoading)
+                        return const Center(child: CircularProgressIndicator());
+
                       final rachas = snapshot.data ?? [];
                       if (rachas.isEmpty) {
-                        return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.sports_volleyball, size: 60, color: Colors.grey.shade300), const SizedBox(height: 10), const Text("Nenhum grupo ainda.")]));
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.sports_volleyball,
+                                size: 60,
+                                color: Colors.grey.shade300,
+                              ),
+                              const SizedBox(height: 10),
+                              const Text("Nenhum grupo ainda."),
+                            ],
+                          ),
+                        );
                       }
 
                       return PageView.builder(
                         controller: _pageController,
                         physics: const BouncingScrollPhysics(),
                         itemCount: rachas.length,
-                        onPageChanged: (idx) => setState(() => _currentPage = idx),
+                        onPageChanged: (idx) =>
+                            setState(() => _currentPage = idx),
                         itemBuilder: (context, index) {
                           final racha = rachas[index];
-                          
+
                           // Animação de Escala 3D
                           return AnimatedBuilder(
                             animation: _pageController,
@@ -352,7 +599,10 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
                               double value = 1.0;
                               if (_pageController.position.haveDimensions) {
                                 value = _pageController.page! - index;
-                                value = (1 - (value.abs() * 0.3)).clamp(0.0, 1.0);
+                                value = (1 - (value.abs() * 0.3)).clamp(
+                                  0.0,
+                                  1.0,
+                                );
                               } else {
                                 value = (index == 0) ? 1.0 : 0.7;
                               }
@@ -362,8 +612,10 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
                                 child: Transform.scale(
                                   scale: curve,
                                   child: Opacity(
-                                    opacity: (value < 0.5) ? 0.5 : 1.0, 
-                                    child: _buildGlassCard(racha), // Chama o Card
+                                    opacity: (value < 0.5) ? 0.5 : 1.0,
+                                    child: _buildGlassCard(
+                                      racha,
+                                    ), // Chama o Card
                                   ),
                                 ),
                               );
@@ -376,12 +628,18 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
                 ),
 
                 const Spacer(flex: 2),
-                
+
                 // Indicador
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 20),
-                    child: Text("Deslize para selecionar", style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                    child: Text(
+                      "Deslize para selecionar",
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -404,28 +662,59 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
             width: double.infinity,
             margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.65), 
+              color: Colors.white.withOpacity(0.65),
               borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: Colors.white.withOpacity(0.8), width: 1.5),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.8),
+                width: 1.5,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: _primaryBlue.withOpacity(0.15),
                   blurRadius: 30,
                   offset: const Offset(0, 15),
-                  spreadRadius: -5
-                )
+                  spreadRadius: -5,
+                ),
               ],
             ),
             child: Stack(
               children: [
                 Positioned(
-                  top: -20, right: -20,
+                  top: -20,
+                  right: -20,
                   child: Container(
-                    width: 120, height: 120,
-                    decoration: BoxDecoration(color: _primaryBlue.withOpacity(0.08), shape: BoxShape.circle),
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: _primaryBlue.withOpacity(0.08),
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
-                
+
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: GestureDetector(
+                    onTap: () => _sairDoRacha(racha),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent.withOpacity(0.12),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.redAccent.withOpacity(0.4),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.exit_to_app,
+                        size: 20,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  ),
+                ),
+
                 Padding(
                   padding: const EdgeInsets.all(30),
                   child: Column(
@@ -433,50 +722,83 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
                     children: [
                       // HERO 1: Ícone
                       Hero(
-                        tag: 'racha_icon_${racha.codigo}', // Tag única para o racha
+                        tag:
+                            'racha_icon_${racha.codigo}', // Tag única para o racha
                         child: Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white,
-                            boxShadow: [BoxShadow(color: _primaryBlue.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 10))],
+                            boxShadow: [
+                              BoxShadow(
+                                color: _primaryBlue.withOpacity(0.2),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
                           ),
-                          child: Icon(Icons.shield, size: 60, color: _primaryBlue),
+                          child: Icon(
+                            Icons.shield,
+                            size: 60,
+                            color: _primaryBlue,
+                          ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 30),
-                      
+
                       // HERO 2: Título
                       Hero(
                         tag: 'racha_title_${racha.codigo}',
-                        child: Material( // Material necessário para evitar erro de texto no Hero
+                        child: Material(
+                          // Material necessário para evitar erro de texto no Hero
                           color: Colors.transparent,
                           child: Text(
                             racha.nome,
                             textAlign: TextAlign.center,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: _darkText, height: 1.1),
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                              color: _darkText,
+                              height: 1.1,
+                            ),
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 15),
-                      
+
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.green.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.green.withOpacity(0.3))
+                          border: Border.all(
+                            color: Colors.green.withOpacity(0.3),
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.circle, size: 8, color: Colors.green),
+                            const Icon(
+                              Icons.circle,
+                              size: 8,
+                              color: Colors.green,
+                            ),
                             const SizedBox(width: 8),
-                            Text("Ativo", style: TextStyle(fontSize: 14, color: Colors.green.shade700, fontWeight: FontWeight.bold)),
+                            Text(
+                              "Ativo",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.green.shade700,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -488,14 +810,27 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: [_primaryBlue, const Color(0xFF00B0FF)]),
+                          gradient: LinearGradient(
+                            colors: [_primaryBlue, const Color(0xFF00B0FF)],
+                          ),
                           borderRadius: BorderRadius.circular(18),
-                          boxShadow: [BoxShadow(color: _primaryBlue.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))],
+                          boxShadow: [
+                            BoxShadow(
+                              color: _primaryBlue.withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
                         ),
                         child: const Text(
                           "ACESSAR",
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1.2, fontSize: 16),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
                     ],
@@ -511,9 +846,17 @@ class _RachaPageState extends State<RachaPage> with TickerProviderStateMixin {
 
   Widget _buildLightBlob(Color color, double size) {
     return Container(
-      width: size, height: size,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: color.withOpacity(0.8), boxShadow: [BoxShadow(color: color, blurRadius: 60, spreadRadius: 10)]),
-      child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40), child: Container(color: Colors.transparent)),
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color.withOpacity(0.8),
+        boxShadow: [BoxShadow(color: color, blurRadius: 60, spreadRadius: 10)],
+      ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+        child: Container(color: Colors.transparent),
+      ),
     );
   }
 }
