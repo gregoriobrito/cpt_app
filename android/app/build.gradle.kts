@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.cpv_app"
+    namespace = "br.com.aptare.cpt"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

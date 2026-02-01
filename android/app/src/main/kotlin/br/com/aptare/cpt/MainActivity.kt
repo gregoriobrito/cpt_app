@@ -1,4 +1,4 @@
-package com.example.cpv_app
+package br.com.aptare.cpt
 
 import io.flutter.embedding.android.FlutterActivity
 
