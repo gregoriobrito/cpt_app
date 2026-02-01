@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cpv_app/features/usuario/usuario_informacoes_model.dart';
 import 'package:cpv_app/features/usuario/usuario_model.dart';
 
 import '../../core/api_client.dart';
@@ -77,6 +78,17 @@ class RachaService {
       } catch (e) {
         throw Exception('Erro ${response.statusCode} ao excluir.');
       }
+    }
+  }
+
+  Future<InformacoesUsuario> informacoesUsuario(int idRacha) async {
+    final response = await _client.get('/racha/informacoesUsuario/$idRacha');
+
+    if (response.statusCode == 200) {
+      final jsonBody = jsonDecode(response.body);
+      return InformacoesUsuario.fromJson(jsonBody);
+    } else {
+      throw Exception("Erro ao buscar racha: ${response.statusCode}");
     }
   }
 }

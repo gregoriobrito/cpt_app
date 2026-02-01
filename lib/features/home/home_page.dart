@@ -283,7 +283,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
                       return GestureDetector(
                         onTap: () async {
-                          await Navigator.push(context, MaterialPageRoute(builder: (_) => UsuarioPerfilPage(usuario: usuario)));
+                          await Navigator.push(context, MaterialPageRoute(builder: (_) => UsuarioPerfilPage(usuario: usuario, racha: widget.racha)));
                           _carregarDadosLocais();
                           setState(() { _usuarioFuture = UsuarioService().buscar(); });
                         },
