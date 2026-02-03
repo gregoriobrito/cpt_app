@@ -1,7 +1,9 @@
 import 'dart:convert';
+
 import 'package:cpv_app/core/api_client.dart';
 import 'package:cpv_app/features/racha/racha_usuario_model.dart';
 import 'package:cpv_app/features/usuario/usuario_administrador_model.dart';
+import 'package:cpv_app/features/usuario/usuario_alterar_model.dart';
 import 'package:cpv_app/features/usuario/usuario_cadastro_model.dart';
 import 'package:cpv_app/features/usuario/usuario_model.dart';
 import 'package:cpv_app/features/usuario/usuario_vincular_model.dart';
@@ -103,6 +105,16 @@ class UsuarioService {
     if (response.statusCode == 200) {
       final jsonBody = jsonDecode(response.body);
       return UsuarioVincular.fromJson(jsonBody);
+    } else {
+      final errorBody = jsonDecode(response.body);
+      throw Exception(errorBody['message'] ?? 'Erro desconhecido');
+    }
+  }
+
+  Future<void> alterar(UsuarioAlterar request) async {
+    final response = await _client.post("/usuario/alterar", body: request.toJson());
+    if (response.statusCode == 200) {
+      return;
     } else {
       final errorBody = jsonDecode(response.body);
       throw Exception(errorBody['message'] ?? 'Erro desconhecido');

@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:cpv_app/features/usuario/usuario_alterar_model.dart';
 import 'package:cpv_app/features/usuario/usuario_alterar_senha_page.dart';
 import 'package:cpv_app/features/usuario/usuario_informacoes_model.dart';
+import 'package:cpv_app/features/usuario/usuario_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,6 +30,7 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
   // Cores Design System
   final Color _primaryBlue = const Color(0xFF2979FF);
   final Color _darkText = const Color(0xFF1E2230);
+  bool _loading = false;
 
   bool _isEditing = false;
   late TextEditingController _nomeController;
@@ -301,14 +304,43 @@ class _UsuarioPerfilPageState extends State<UsuarioPerfilPage> {
     Navigator.pop(context, true);
   }
 
-  void _toggleEdit() {
+  void _toggleEdit() async {
     if (_isEditing) {
+      try {
+      setState(() => _loading = true);
+
+      final login = _loginController.text.trim().toUpperCase();
+      final nome = _nomeController.text.trim().toUpperCase();
+      final apelido = _apelidoController.text.trim().toUpperCase();
+
+      UsuarioAlterar request = UsuarioAlterar(nome: nome, apelido: apelido, login: login);
+      await UsuarioService().alterar(request);
+
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Perfil atualizado com sucesso!"),
           backgroundColor: Colors.green,
         ),
       );
+
+      _loginController.text = _loginController.text.trim().toUpperCase();
+      _nomeController.text = _nomeController.text.trim().toUpperCase();
+      _apelidoController.text = _apelidoController.text.trim().toUpperCase();
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceFirst('Exception: ', ''), style: const TextStyle(color: Colors.white)),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      } finally {
+        if (mounted) setState(() => _loading = false);
+      }
     }
     setState(() => _isEditing = !_isEditing);
   }

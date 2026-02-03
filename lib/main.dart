@@ -313,7 +313,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erro: $e"), backgroundColor: Colors.redAccent, behavior: SnackBarBehavior.floating),
+        //SnackBar(content: Text("Erro: $e"), backgroundColor: Colors.redAccent, behavior: SnackBarBehavior.floating),
+        SnackBar(content: Text("Usuário ou senha inválido"), backgroundColor: Colors.redAccent, behavior: SnackBarBehavior.floating),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -367,13 +368,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 _buildLightInput(controller: _loginController, label: 'Usuário', icon: Icons.person_outline_rounded),
                                 const SizedBox(height: 20),
                                 _buildLightInput(controller: _senhaController, label: 'Senha', icon: Icons.lock_outline_rounded, isPassword: true, obscureText: _obscurePassword, onToggleVisibility: () => setState(() => _obscurePassword = !_obscurePassword)),
-                                Align(
+                                /*Align(
                                   alignment: Alignment.centerRight,
                                   child: TextButton(
                                     onPressed: () {},
                                     child: Text("Esqueceu a senha?", style: TextStyle(color: _primaryBlue, fontWeight: FontWeight.w600)),
                                   ),
-                                ),
+                                ),*/
                                 const SizedBox(height: 20),
                                 _buildGradientButton(),
                               ],
