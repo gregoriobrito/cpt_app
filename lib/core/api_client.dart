@@ -8,7 +8,7 @@ class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
   factory ApiClient() => _instance;
 
-  final String baseUrl = 'https://cpt-web.nonprod.cloud.aptare.com.br';
+  final String baseUrl = 'http://ec2-3-147-172-99.us-east-2.compute.amazonaws.com';
 
   String? _token;
 
