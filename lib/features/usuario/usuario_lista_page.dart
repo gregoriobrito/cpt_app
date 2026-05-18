@@ -1,3 +1,4 @@
+import 'package:cpv_app/core/api_client.dart';
 import 'package:cpv_app/features/partida/partida_historico_page.dart';
 import 'package:cpv_app/features/racha/racha_model.dart';
 import 'package:cpv_app/features/racha/racha_service.dart';
@@ -350,7 +351,20 @@ class _UsuarioListaPageState extends State<UsuarioListaPage> {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   leading: CircleAvatar(
                     backgroundColor: _primaryBlue.withOpacity(0.1),
-                    child: Text(inicial, style: TextStyle(color: _primaryBlue, fontWeight: FontWeight.bold)),
+                    backgroundImage: u.flagImagem == "S"
+                        ? NetworkImage(
+                            '${ApiClient().baseUrl}/usuario/imagemPerfil/${u.codigo}',
+                          )
+                        : null,
+                    child: u.flagImagem == "S"
+                        ? null
+                        : Text(
+                            inicial,
+                            style: TextStyle(
+                              color: _primaryBlue,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                   title: Text(u.nome, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: _darkText)),
                   subtitle: u.apelido != null && u.apelido!.isNotEmpty 

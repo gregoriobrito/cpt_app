@@ -4,13 +4,15 @@ class Usuario {
   final String? apelido;
   final String login;    
   final String? flagUsuarioAdmin;
+  final String? flagImagem;
 
   Usuario({
     required this.codigo,
     required this.nome,
     this.apelido,
     required this.login,
-    this.flagUsuarioAdmin
+    this.flagUsuarioAdmin,
+    this.flagImagem
   });
 
   factory Usuario.fromJson(Map<String, dynamic> json) {
@@ -19,7 +21,8 @@ class Usuario {
       nome: json['nome'] as String,
       apelido: json['apelido'] as String?, 
       login: (json['login'] as String?) ?? '', 
-      flagUsuarioAdmin: (json['flagUsuarioAdmin'] as String?) ?? ''
+      flagUsuarioAdmin: (json['flagUsuarioAdmin'] as String?) ?? '',
+      flagImagem: (json['flagImagem'] as String?) ?? ''
     );
   }
 }

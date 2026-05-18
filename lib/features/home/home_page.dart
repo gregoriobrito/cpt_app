@@ -298,17 +298,38 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             children: [
                               // Avatar
                               Container(
-                                height: 55, width: 55,
+                                height: 55,
+                                width: 55,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: Colors.white,
                                   border: Border.all(color: Colors.white, width: 2),
-                                  boxShadow: [BoxShadow(color: _primaryBlue.withOpacity(0.2), blurRadius: 10)],
-                                  image: _profileImagePath != null ? DecorationImage(image: FileImage(File(_profileImagePath!)), fit: BoxFit.cover) : null,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: _primaryBlue.withOpacity(0.2),
+                                      blurRadius: 10,
+                                    )
+                                  ],
                                 ),
-                                child: _profileImagePath == null 
-                                    ? Center(child: Text(nomeDisplay[0].toUpperCase(), style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _primaryBlue)))
-                                    : null,
+                                child: ClipOval(
+                                  child: usuario.flagImagem == "S"
+                                      ? Image.network(
+                                          '${ApiClient().baseUrl}/usuario/imagemPerfil/${usuario.codigo}',
+                                          fit: BoxFit.cover,
+                                          width: 55,
+                                          height: 55,
+                                        )
+                                      : Center(
+                                          child: Text(
+                                            nomeDisplay[0].toUpperCase(),
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: _primaryBlue,
+                                            ),
+                                          ),
+                                        ),
+                                ),
                               ),
                               const SizedBox(width: 16),
                               Expanded(

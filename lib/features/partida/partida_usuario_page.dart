@@ -1,3 +1,4 @@
+import 'package:cpv_app/core/api_client.dart';
 import 'package:flutter/material.dart';
 import 'package:cpv_app/features/partida/partida_cadastrar_model.dart';
 import 'package:cpv_app/features/partida/partida_placar_page.dart';
@@ -182,7 +183,19 @@ class _PartidaUsuarioPageState extends State<PartidaUsuarioPage> {
                             children: [
                               CircleAvatar(
                                 backgroundColor: isOther ? Colors.grey[200] : (isSelected ? corAtiva : Colors.grey[100]),
-                                child: Icon(Icons.person, color: isSelected ? Colors.white : Colors.grey),
+                                child: u.flagImagem == "S"
+                                  ? ClipOval(
+                                      child: Image.network(
+                                        '${ApiClient().baseUrl}/usuario/imagemPerfil/${u.codigo}',
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.person,
+                                      color: isSelected ? Colors.white : Colors.grey,
+                                    ),
                               ),
                               const SizedBox(width: 16),
                               Expanded(
