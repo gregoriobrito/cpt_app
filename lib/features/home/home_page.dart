@@ -1,8 +1,5 @@
-import 'dart:convert';
-import 'dart:io';
 import 'dart:ui';
 
-import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:cpv_app/core/api_client.dart';
 import 'package:cpv_app/features/partida/partida_historico_page.dart';
 import 'package:cpv_app/features/partida/partida_usuario_page.dart';
@@ -413,23 +410,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 ),
                               ),
                             ),
-                            /*
-                            const SizedBox(width: 8),
-                            // Botão Mais Opções (Sair/Excluir) - NOVO
-                            InkWell(
-                              onTap: _mostrarOpcoesGerenciamentoRacha,
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.1), blurRadius: 5)]
-                                ),
-                                child: Icon(Icons.more_vert_rounded, size: 18, color: Colors.grey.shade700),
-                              ),
-                            ),
-                            */
                           ],
                         )
                       ],

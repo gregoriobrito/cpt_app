@@ -41,12 +41,16 @@ class ItemResultado {
   final String apelido;
   final String nome;
   final int pontuacao;
+  final int codigo;
+  final String flagImagem;
 
   ItemResultado({
     required this.agrupador,
     required this.apelido,
     required this.nome,
     required this.pontuacao,
+    required this.codigo,
+    required this.flagImagem
   });
 
   factory ItemResultado.fromJson(Map<String, dynamic> json) {
@@ -55,6 +59,8 @@ class ItemResultado {
       apelido: json['apelido'] as String,
       nome: json['nome'] as String,
       pontuacao: (json['pontuacao'] as num).toInt(),
+      codigo: (json['codigo'] as num).toInt(),
+      flagImagem: json['flagImagem'] as String,
     );
   }
 }

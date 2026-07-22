@@ -1,3 +1,4 @@
+import 'package:cpv_app/core/api_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'relatorio_model.dart';
@@ -115,8 +116,18 @@ class _RelatorioEstatisticaPageState extends State<RelatorioEstatisticaPage> {
                   child: Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: Colors.grey.shade100,
-                        child: Text(item.nome.substring(0, 1), style: TextStyle(color: _darkText, fontWeight: FontWeight.bold)),
+                        backgroundColor: Color(0xFF2979FF).withOpacity(0.1),
+                        backgroundImage: item.flagImagem == "S"
+                            ? NetworkImage(
+                                '${ApiClient().baseUrl}/usuario/imagemPerfil/${item.codigo}',
+                              )
+                            : null,
+                        child: item.flagImagem == "S"
+                            ? null
+                            : Text(item.nome.substring(0, 1), style: TextStyle(
+                              color: Color(0xFF2979FF),
+                              fontWeight: FontWeight.bold,
+                            ),),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
